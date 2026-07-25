@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="theme-color" content="#e8eeea" />
+  <title>网页资产计 / Internet Asset Meter · PRD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #e8eeea;
+      --paper: rgba(250, 253, 251, 0.88);
+      --ink: #132826;
+      --muted: #5a6b64;
+      --line: rgba(19, 40, 38, 0.1);
+      --teal: #0f5c4c;
+      --teal-soft: rgba(15, 92, 76, 0.1);
+      --teal-mid: #1a7a64;
+      --slate: #3f6280;
+      --gold: #8a6a2f;
+      --shadow: 0 20px 60px rgba(19, 40, 38, 0.07);
+      --shadow-sm: 0 8px 24px rgba(19, 40, 38, 0.06);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --container: 1200px;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --font-display: "Noto Serif SC", "Instrument Serif", "Songti SC", serif;
+      --font-body: "Source Sans 3", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--font-body);
+      letter-spacing: 0.01em;
+      background:
+        radial-gradient(ellipse 80% 50% at 0% -10%, rgba(15, 92, 76, 0.14), transparent 50%),
+        radial-gradient(ellipse 60% 40% at 100% 0%, rgba(63, 98, 128, 0.12), transparent 45%),
+        radial-gradient(ellipse 50% 30% at 50% 100%, rgba(15, 92, 76, 0.06), transparent 50%),
+        linear-gradient(165deg, #f3f7f4 0%, #e8eeea 42%, #e4ebe7 100%);
+      min-height: 100vh;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.4;
+      background-image: radial-gradient(rgba(19, 40, 38, 0.035) 0.7px, transparent 0.7px);
+      background-size: 18px 18px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.12));
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%);
+      opacity: 0.5;
+      animation: sheen 14s var(--ease) infinite;
+    }
+
+    @keyframes sheen {
+      0%, 100% { transform: translateX(-8%); opacity: 0.25; }
+      50% { transform: translateX(8%); opacity: 0.45; }
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes float-in {
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .page {
+      width: min(var(--container), calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      backdrop-filter: blur(16px) saturate(140%);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      animation: rise 0.7s var(--ease) both;
+    }
+
+    .brand {
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 8px;
+    }
+
+    .brand-kicker {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+
+    .brand-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.75;
+    }
+
+    .doc-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .doc-switch a {
+      text-align: center;
+      padding: 9px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      border: 1px solid var(--line);
+      transition: 200ms var(--ease);
+    }
+
+    .doc-switch a.is-active {
+      background: var(--teal);
+      color: #f7fbf9;
+      border-color: var(--teal);
+    }
+
+    .doc-switch a:not(.is-active):hover {
+      background: var(--teal-soft);
+      border-color: rgba(15, 92, 76, 0.22);
+    }
+
+    .sidebar-block { padding-top: 18px; }
+
+    .fact-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .fact {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.55);
+      padding: 12px;
+      transition: transform 220ms var(--ease), box-shadow 220ms var(--ease);
+    }
+
+    .fact:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .fact span {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .fact strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 15px;
+      line-height: 1.35;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sidebar-note, .footer-note {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.75;
+    }
+
+    .toc { display: grid; gap: 6px; }
+
+    .toc a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: 200ms var(--ease);
+      font-size: 14px;
+    }
+
+    .toc a:hover,
+    .toc a:focus-visible,
+    .toc a[aria-current="true"] {
+      background: var(--teal-soft);
+      border-color: rgba(15, 92, 76, 0.16);
+      outline: none;
+    }
+
+    .toc-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      background: rgba(15, 92, 76, 0.1);
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pill-note {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--teal-soft);
+      border: 1px solid rgba(15, 92, 76, 0.16);
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .main {
+      min-width: 0;
+      display: grid;
+      gap: 20px;
+    }
+
+    .main > * { animation: rise 0.75s var(--ease) both; }
+    .main > *:nth-child(1) { animation-delay: 0.05s; }
+    .main > *:nth-child(2) { animation-delay: 0.1s; }
+    .main > *:nth-child(3) { animation-delay: 0.14s; }
+    .main > *:nth-child(4) { animation-delay: 0.18s; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: calc(var(--radius) + 4px);
+      background:
+        linear-gradient(145deg, rgba(250, 253, 251, 0.95), rgba(236, 244, 240, 0.82)),
+        linear-gradient(160deg, rgba(15, 92, 76, 0.08), rgba(63, 98, 128, 0.05));
+      box-shadow: var(--shadow);
+      padding: 32px;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 88% 12%, rgba(15, 92, 76, 0.12), transparent 28%),
+        radial-gradient(circle at 12% 84%, rgba(63, 98, 128, 0.1), transparent 24%);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--teal-soft);
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 16px 0 14px;
+      font-family: var(--font-display);
+      font-size: clamp(40px, 5vw, 64px);
+      font-weight: 700;
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+      background: linear-gradient(120deg, var(--ink) 0%, var(--teal-mid) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-copy p {
+      margin: 0;
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: 16.5px;
+      line-height: 1.85;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      backdrop-filter: blur(6px);
+    }
+
+    .tag strong { color: var(--teal); font-size: 13px; }
+
+    .mini-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.62);
+      padding: 14px 15px;
+      transition: transform 240ms var(--ease), box-shadow 240ms var(--ease);
+    }
+
+    .metric:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .metric span {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .metric strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 22px;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 12.5px;
+    }
+
+    .asset-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(236,244,240,0.92));
+      padding: 18px;
+      min-height: 100%;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    .panel-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .panel-top h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 20px;
+      line-height: 1.3;
+    }
+
+    .panel-top p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(138, 106, 47, 0.12);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .chart-frame {
+      position: relative;
+      min-height: 360px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 25%, rgba(26, 122, 100, 0.1), transparent 22%),
+        radial-gradient(circle at 78% 70%, rgba(63, 98, 128, 0.1), transparent 20%),
+        linear-gradient(180deg, #f2f7f4 0%, #e5eee9 100%);
+    }
+
+    .chart-frame svg { display: block; width: 100%; height: 100%; }
+
+    .floating-card {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      width: min(236px, calc(100% - 32px));
+      border: 1px solid rgba(19, 40, 38, 0.12);
+      border-radius: var(--radius-sm);
+      background: rgba(250, 253, 251, 0.92);
+      box-shadow: 0 14px 36px rgba(19, 40, 38, 0.1);
+      padding: 14px;
+      backdrop-filter: blur(10px);
+      animation: float-in 0.9s var(--ease) 0.6s both;
+    }
+
+    .floating-card .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .floating-card .row + .row {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(19, 40, 38, 0.08);
+    }
+
+    .floating-card strong {
+      font-family: var(--font-display);
+      font-variant-numeric: tabular-nums;
+      color: var(--teal);
+    }
+
+    .section {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: var(--shadow-sm);
+      padding: 26px 28px;
+      backdrop-filter: blur(10px);
+      transition: box-shadow 280ms var(--ease);
+    }
+
+    .section:hover { box-shadow: var(--shadow); }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 10px 14px;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-head .num {
+      color: var(--teal);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+      width: 100%;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .content-block h3 {
+      margin: 0 0 10px;
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .content-block p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.85;
+    }
+
+    .definition-list {
+      display: grid;
+      gap: 10px;
+      margin: 14px 0 0;
+    }
+
+    .definition-row {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+
+    .definition-row:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .definition-row dt { font-weight: 700; line-height: 1.5; }
+    .definition-row dd { margin: 0; color: var(--muted); line-height: 1.8; }
+
+    .callout {
+      border-left: 3px solid var(--teal);
+      padding: 18px 18px 18px 20px;
+      background: linear-gradient(90deg, rgba(15, 92, 76, 0.08), transparent 85%);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 8px;
+      font-family: var(--font-display);
+      font-size: 16px;
+    }
+
+    .callout p { margin: 0; color: var(--muted); line-height: 1.8; }
+
+    .timeline {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 16px;
+    }
+
+    .timeline li { position: relative; padding-left: 28px; }
+
+    .timeline li::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 10px;
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--teal);
+      box-shadow: 0 0 0 5px rgba(15, 92, 76, 0.12);
+    }
+
+    .timeline h3 {
+      margin: 0 0 6px;
+      font-family: var(--font-display);
+      font-size: 17px;
+      line-height: 1.4;
+    }
+
+    .timeline p { margin: 0; color: var(--muted); line-height: 1.8; }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .mode {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.58);
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+      min-height: 100%;
+      transition: transform 240ms var(--ease), box-shadow 240ms var(--ease);
+    }
+
+    .mode:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .mode .head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+    }
+
+    .mode .head strong {
+      font-family: var(--font-display);
+      font-size: 17px;
+      line-height: 1.35;
+    }
+
+    .mode .head span {
+      font-size: 11px;
+      color: var(--teal);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .mode p, .mode ul { margin: 0; color: var(--muted); line-height: 1.75; }
+    .mode ul { padding-left: 18px; }
+    .mode ul li + li { margin-top: 6px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    th, td {
+      border-top: 1px solid var(--line);
+      padding: 13px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      width: 22%;
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    td { color: var(--ink); }
+
+    .table-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .milestone-grid { display: grid; gap: 14px; }
+
+    .milestone-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 14px;
+      align-items: start;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    .milestone-row:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .milestone-row strong {
+      display: block;
+      margin-bottom: 6px;
+      font-family: var(--font-display);
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    .milestone-row p { margin: 0; color: var(--muted); line-height: 1.8; }
+
+    .milestone-tag {
+      justify-self: end;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--line);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .open-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .open-list li + li { margin-top: 8px; }
+
+    .footer {
+      padding: 12px 4px 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .accent-line {
+      height: 1px;
+      margin: 14px 0 0;
+      background: linear-gradient(90deg, rgba(15, 92, 76, 0.45), rgba(63, 98, 128, 0.18), transparent);
+    }
+
+    .code-block {
+      margin: 0;
+      padding: 16px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: rgba(19, 40, 38, 0.04);
+      overflow-x: auto;
+      font-family: ui-monospace, "SF Mono", Consolas, monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: var(--ink);
+      white-space: pre;
+    }
+
+    @media (max-width: 1080px) {
+      .shell { display: flex; flex-direction: column; }
+      .main { order: 1; }
+      .sidebar { order: 2; position: static; }
+      .hero-grid, .grid-2, .grid-3, .mini-metrics, .mode-grid, .milestone-row {
+        grid-template-columns: 1fr;
+      }
+      .milestone-tag { justify-self: start; }
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        width: min(var(--container), calc(100vw - 20px));
+        padding-top: 12px;
+        padding-bottom: 28px;
+      }
+      .hero, .section, .sidebar { padding: 18px; }
+      .definition-row { grid-template-columns: 1fr; gap: 4px; }
+      .chart-frame { min-height: 300px; }
+      .section-head h2 { font-size: 22px; }
+      h1 { font-size: clamp(34px, 10vw, 48px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    @media print {
+      body { background: #fff; }
+      body::before, body::after, .hero, .section, .sidebar { box-shadow: none !important; }
+      .page { width: 100%; padding: 0; }
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; border: 1px solid #ddd; margin-bottom: 12px; }
+      .doc-switch { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-kicker">Local PRD</div>
+          <h2 class="brand-title">网页资产计</h2>
+          <p class="brand-sub">Internet Asset Meter 把每次有效打开按多指标权重动态存入一笔钱，而不是固定单价计数。</p>
+          <div class="doc-switch" aria-label="文档切换">
+            <a class="is-active" href="internet-odometer-prd.html">产品 PRD</a>
+            <a href="internet-asset-meter-tech.html">技术方案</a>
+          </div>
+        </div>
+
+        <div class="sidebar-block">
+          <div class="fact-grid">
+            <div class="fact">
+              <span>版本</span>
+              <strong>v0.3</strong>
+            </div>
+            <div class="fact">
+              <span>单次上限</span>
+              <strong>≤ ¥10</strong>
+            </div>
+            <div class="fact">
+              <span>入账</span>
+              <strong>权重动态</strong>
+            </div>
+            <div class="fact">
+              <span>数据</span>
+              <strong>本地优先</strong>
+            </div>
+          </div>
+          <p class="sidebar-note">每次有效打开按多指标权重动态存入一笔钱，单次不超过 10 元。</p>
+        </div>
+
+        <div class="sidebar-block">
+          <nav class="toc" aria-label="目录">
+            <a href="#overview" aria-current="true"><span class="toc-num">01</span>产品定义</a>
+            <a href="#loop"><span class="toc-num">02</span>核心循环</a>
+            <a href="#rules"><span class="toc-num">03</span>点击规则</a>
+            <a href="#formula"><span class="toc-num">04</span>权重公式</a>
+            <a href="#asset"><span class="toc-num">05</span>资产模型</a>
+            <a href="#reality"><span class="toc-num">06</span>现实关联</a>
+            <a href="#achievements"><span class="toc-num">07</span>成就系统</a>
+            <a href="#ui"><span class="toc-num">08</span>展示与交互</a>
+            <a href="#mvp"><span class="toc-num">09</span>MVP 边界</a>
+            <a href="#privacy"><span class="toc-num">10</span>数据与隐私</a>
+            <a href="#risks"><span class="toc-num">11</span>风险与开放问题</a>
+          </nav>
+        </div>
+
+        <div class="sidebar-block">
+          <div class="pill-note">本地可打印 / 可直接打开</div>
+          <p class="footer-note">这版把固定换算改成多指标权重动态入账，每次打开都是一笔可解释的存入。</p>
+        </div>
+      </aside>
+
+      <main class="main">
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <div class="eyebrow">Click-to-Value PRD</div>
+              <h1 id="hero-title">网页资产计<br />Internet Asset Meter</h1>
+              <p>
+                把浏览从“点了多少页”变成“存入了多少钱”。每次有效网页打开都会按停留、加载、新鲜度、页面类型等指标加权，
+                再叠加小幅随机，动态生成一笔不超过 10 元的入账，挂到现实目标与成就上。
+              </p>
+
+              <div class="tag-row" aria-label="关键设定">
+                <span class="tag"><strong>单次</strong> ≤ ¥10 动态入账</span>
+                <span class="tag"><strong>公式</strong> = 四指标加权</span>
+                <span class="tag"><strong>关联</strong> = 现实成就</span>
+                <span class="tag"><strong>边界</strong> = 本地优先</span>
+              </div>
+
+              <div class="mini-metrics" aria-label="示意指标">
+                <div class="metric">
+                  <span>今日打开</span>
+                  <strong>238 页</strong>
+                  <small>只统计有效网页，不把刷新和浏览器内部页算进去。</small>
+                </div>
+                <div class="metric">
+                  <span>今日入账</span>
+                  <strong>¥1,246.80</strong>
+                  <small>每笔由权重公式生成，金额不一，合计才是今日资产。</small>
+                </div>
+                <div class="metric">
+                  <span>最近一笔</span>
+                  <strong>+¥6.42</strong>
+                  <small>停留 28s · 加载正常 · 新域名，再加一点随机。</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="asset-panel">
+                  <div class="panel-top">
+                <div>
+                  <h2>资产曲线预览</h2>
+                  <p>从有效打开到指标采样，再到动态入账与现实动作，形成一个每天都能看见的闭环。</p>
+                </div>
+                <div class="badge">动态账本</div>
+              </div>
+
+              <div class="chart-frame">
+                <svg viewBox="0 0 560 420" role="img" aria-label="网页资产计资产曲线示意">
+                  <defs>
+                    <linearGradient id="bgfade" x1="0" x2="1" y1="0" y2="1">
+                      <stop offset="0%" stop-color="#f8f3e7" />
+                      <stop offset="100%" stop-color="#f3ead8" />
+                    </linearGradient>
+                    <linearGradient id="assetLine" x1="0" x2="1" y1="0" y2="0">
+                      <stop offset="0%" stop-color="#1f6d58" />
+                      <stop offset="100%" stop-color="#4d6f95" />
+                    </linearGradient>
+                    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+                      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#16312e" flood-opacity="0.16" />
+                    </filter>
+                  </defs>
+
+                  <rect width="560" height="420" fill="url(#bgfade)" />
+
+                  <g opacity="0.55">
+                    <path d="M56 56H530M56 118H530M56 180H530M56 242H530M56 304H530M56 366H530" stroke="#d9ccb6" stroke-width="1" />
+                    <path d="M92 28V378M170 28V378M248 28V378M326 28V378M404 28V378M482 28V378" stroke="#d9ccb6" stroke-width="1" />
+                  </g>
+
+                  <g fill="none" stroke="#cfb896" stroke-width="10" stroke-linecap="round" opacity="0.48">
+                    <path d="M84 332C132 292 180 290 216 270C255 248 271 206 318 190C369 172 426 184 486 150" />
+                  </g>
+
+                  <path d="M84 332C118 312 142 300 170 282C196 266 214 240 246 226C276 214 298 202 326 186C352 172 388 158 420 128C448 102 468 88 486 76"
+                        fill="none"
+                        stroke="url(#assetLine)"
+                        stroke-width="6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-dasharray="13 8"
+                        filter="url(#shadow)" />
+
+                  <circle cx="84" cy="332" r="11" fill="#fffaf2" stroke="#1f6d58" stroke-width="4" />
+                  <circle cx="170" cy="282" r="8" fill="#fffaf2" stroke="#4d6f95" stroke-width="3" />
+                  <circle cx="246" cy="226" r="8" fill="#fffaf2" stroke="#b96f2b" stroke-width="3" />
+                  <circle cx="326" cy="186" r="9" fill="#fffaf2" stroke="#477f53" stroke-width="3" />
+                  <circle cx="420" cy="128" r="8" fill="#fffaf2" stroke="#a45c42" stroke-width="3" />
+                  <circle cx="486" cy="76" r="11" fill="#fffaf2" stroke="#1f6d58" stroke-width="4" />
+
+                  <text x="72" y="352" fill="#16312e" font-size="18" font-weight="700">起点</text>
+                  <text x="132" y="270" fill="#16312e" font-size="14" font-weight="700">300 元</text>
+                  <text x="214" y="214" fill="#16312e" font-size="14" font-weight="700">1000 元</text>
+                  <text x="294" y="174" fill="#16312e" font-size="14" font-weight="700">3000 元</text>
+                  <text x="386" y="116" fill="#16312e" font-size="14" font-weight="700">5000 元</text>
+                  <text x="440" y="66" fill="#16312e" font-size="16" font-weight="700">当前资产</text>
+
+                  <g transform="translate(42 26)" opacity="0.95">
+                    <rect x="0" y="0" width="178" height="48" rx="8" fill="rgba(255,251,244,0.88)" stroke="rgba(22,49,46,0.12)" />
+                    <text x="14" y="18" fill="#5d6864" font-size="12">单次入账上限</text>
+                    <text x="14" y="34" fill="#16312e" font-size="18" font-weight="800">动态 ≤ ¥10</text>
+                  </g>
+                </svg>
+
+                <div class="floating-card">
+                  <div class="row"><span>当前资产</span><strong>¥12,840</strong></div>
+                  <div class="row"><span>最近入账</span><strong>+¥6.42</strong></div>
+                  <div class="row"><span>最近现实动作</span><strong>完成一次记账</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="overview" class="section">
+          <div class="section-head">
+            <div class="num">01</div>
+            <h2>产品定义</h2>
+            <p>核心是统计有效网页打开，按多指标权重动态存入一笔钱，而不是固定单价换算。</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="content-block">
+              <h3>一句话定义</h3>
+              <p>
+                网页资产计是一个浏览器插件：用户每次打开可计数的网页时，插件会采集停留、加载、新鲜度、页面类型等本地指标，
+                用权重公式生成一笔不超过 10 元的入账。这个数字不是抽象分数，而是可以和现实目标相连的账本单位。
+              </p>
+              <div class="accent-line"></div>
+              <dl class="definition-list">
+                <div class="definition-row">
+                  <dt>核心单位</dt>
+                  <dd>1 次有效网页打开 = 1 笔动态入账，金额由权重公式决定，单次 ≤ ¥10。</dd>
+                </div>
+                <div class="definition-row">
+                  <dt>核心叙事</dt>
+                  <dd>用户不是“刷了多少页”，而是“每一次浏览都往账本里存了一笔钱”。</dd>
+                </div>
+                <div class="definition-row">
+                  <dt>产品边界</dt>
+                  <dd>v1 先做动态记账和现实成就，不做复杂金融结算或支付闭环。</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="callout">
+              <strong>它应该更像一张会动的个人资产账，而不是固定单价的计数器。</strong>
+              <p>
+                价值感来自“这一笔为什么是这么多”：停留更久、加载更正常、域名更新鲜，入账就更高；
+                再往前一步，累计资产继续绑定储蓄、预算、奖励和现实里的小成就。
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="loop" class="section">
+          <div class="section-head">
+            <div class="num">02</div>
+            <h2>核心循环</h2>
+            <p>从有效打开，到指标采样，再到动态入账与现实动作，形成一个短闭环。</p>
+          </div>
+
+          <ol class="timeline">
+            <li>
+              <h3>识别有效网页</h3>
+              <p>浏览器打开一个可计数的网页，插件判断这是一次有效访问，而不是新标签页、刷新、内部页面或短时间重复访问。</p>
+            </li>
+            <li>
+              <h3>采集四项本地指标</h3>
+              <p>在本地记录停留时长、加载耗时、域名/URL 新鲜度、页面类型启发分。不做页面正文内容分析，也不上传浏览历史。</p>
+            </li>
+            <li>
+              <h3>权重公式生成入账</h3>
+              <p>四项指标归一化后加权求和，再乘以满额基准并叠加小幅随机噪声，得到一笔 ≤ ¥10 的存入。页面同时显示“打开次数”和“入账金额”。</p>
+            </li>
+            <li>
+              <h3>资产映射现实并触发成就</h3>
+              <p>累计资产用于提示记账、转存、暂停冲动消费或复盘；跨过阈值时给出现实行动或金钱目标，而不是空洞徽章。</p>
+            </li>
+          </ol>
+        </section>
+
+        <section id="rules" class="section">
+          <div class="section-head">
+            <div class="num">03</div>
+            <h2>点击规则</h2>
+            <p>这里的“点击”指有效网页打开；入账金额另由权重公式计算，不在本节省钱。</p>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <h3>计入规则</h3>
+              <table aria-label="点击规则">
+                <tbody>
+                  <tr>
+                    <th>计入</th>
+                    <td>常规网页正文页，且主文档完成加载。</td>
+                  </tr>
+                  <tr>
+                    <th>排除</th>
+                    <td>新标签页、刷新、浏览器内部页面、扩展内部页面。</td>
+                  </tr>
+                  <tr>
+                    <th>去重</th>
+                    <td>同一 URL 在短时间内重复打开，不再重复入账。</td>
+                  </tr>
+                  <tr>
+                    <th>结算时机</th>
+                    <td>标签页关闭、切换离开，或停留达到采样窗口上限时结算该笔入账。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h3>用户感知</h3>
+              <table aria-label="点击定义">
+                <tbody>
+                  <tr>
+                    <th>不是</th>
+                    <td>页面内按钮的 click 统计，不是广告事件，不是埋点面板。</td>
+                  </tr>
+                  <tr>
+                    <th>是</th>
+                    <td>一次有效网页打开，再按“看了多久、加载如何、是否新鲜”动态存入一笔钱。</td>
+                  </tr>
+                  <tr>
+                    <th>原则</th>
+                    <td>只统计用户可理解、可解释、可回忆的浏览动作；金额必须说得出为什么。</td>
+                  </tr>
+                  <tr>
+                    <th>节奏</th>
+                    <td>宁可少算一点、金额偏保守，也不要让数字显得虚胖。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="formula" class="section">
+          <div class="section-head">
+            <div class="num">04</div>
+            <h2>权重公式</h2>
+            <p>四项本地指标全部参与，归一化后加权，再加噪声，单笔封顶 ¥10。</p>
+          </div>
+
+          <div class="content-block" style="margin-bottom: 18px;">
+            <h3>主公式</h3>
+            <div class="callout">
+              <strong>deposit = clamp( ROUND( CAP × Score × (1 + Noise) , 2) , MIN , CAP )</strong>
+              <p>
+                其中 CAP = 10（元），MIN = 0.30（元）。<br />
+                Score = 0.45·S<sub>dwell</sub> + 0.20·S<sub>load</sub> + 0.20·S<sub>fresh</sub> + 0.15·S<sub>type</sub><br />
+                Noise ~ Uniform(−0.08, +0.08)，即约 ±8% 的随机扰动，让每笔存入有“动态感”，但不喧宾夺主。
+              </p>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-bottom: 18px;">
+            <div>
+              <h3>权重分配（合计 1.00）</h3>
+              <table aria-label="权重表">
+                <tbody>
+                  <tr>
+                    <th>S<sub>dwell</sub> 停留</th>
+                    <td>权重 <strong>0.45</strong>。主指标：看了才算攒到钱。</td>
+                  </tr>
+                  <tr>
+                    <th>S<sub>load</sub> 加载</th>
+                    <td>权重 <strong>0.20</strong>。过快像误开，过慢像卡死，中间最优。</td>
+                  </tr>
+                  <tr>
+                    <th>S<sub>fresh</sub> 新鲜度</th>
+                    <td>权重 <strong>0.20</strong>。新域名/新路径略高，短时重复已在规则层去重。</td>
+                  </tr>
+                  <tr>
+                    <th>S<sub>type</sub> 页面类型</th>
+                    <td>权重 <strong>0.15</strong>。启发式区分正文页与弱内容页，不做正文分析。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="callout">
+              <strong>设计意图：随机是装饰，指标是主因。</strong>
+              <p>
+                用户应能在 popup 里看到类似「+¥6.42 · 停留 28s · 加载正常 · 新域名」。
+                若去掉 Noise，同一浏览画像应得到几乎相同的金额；Noise 只负责让账本不死板。
+              </p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <h3>各指标归一化（0～1）</h3>
+              <table aria-label="指标映射">
+                <tbody>
+                  <tr>
+                    <th>停留 S<sub>dwell</sub></th>
+                    <td>
+                      &lt;3s → 0.10；3–15s → 0.35～0.55；15–60s → 0.55～0.85；
+                      &gt;60s → 0.85～1.00（分段线性插值）。结算时取最终停留。
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>加载 S<sub>load</sub></th>
+                    <td>
+                      用 DOMContentLoaded 或 load 耗时。&lt;200ms → 0.35（疑似秒开/跳转）；
+                      200ms–2.5s → 0.70～1.00（甜点区）；2.5–8s → 0.70→0.40；&gt;8s → 0.25。
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>新鲜度 S<sub>fresh</sub></th>
+                    <td>
+                      今日首次访问该 eTLD+1 → 1.00；同域新路径 → 0.75；
+                      今日已访问过的同路径（过了去重窗仍计入时）→ 0.40；否则 0.55。
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>类型 S<sub>type</sub></th>
+                    <td>
+                      http(s) 常规文档页 → 0.85～1.00；明显列表/搜索结果页启发 → 0.55；
+                      about/chrome/扩展页已排除；无法判断 → 0.60。仅用 URL 模式与导航类型，不读正文。
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h3>计算示例</h3>
+              <table aria-label="公式示例">
+                <tbody>
+                  <tr>
+                    <th>画像 A</th>
+                    <td>停留 28s(0.68)、加载 1.1s(0.95)、新域名(1.00)、正文页(0.90)</td>
+                  </tr>
+                  <tr>
+                    <th>Score</th>
+                    <td>0.45×0.68 + 0.20×0.95 + 0.20×1.00 + 0.15×0.90 = <strong>0.836</strong></td>
+                  </tr>
+                  <tr>
+                    <th>基准额</th>
+                    <td>10 × 0.836 = ¥8.36</td>
+                  </tr>
+                  <tr>
+                    <th>加噪声后</th>
+                    <td>例如 Noise=+0.04 → ¥8.36 × 1.04 ≈ <strong>¥8.69</strong>（仍 ≤ 10）</td>
+                  </tr>
+                  <tr>
+                    <th>画像 B</th>
+                    <td>停留 2s、秒开、旧路径列表页 → Score 偏低 → 约 <strong>¥1～¥2</strong> 区间</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="table-note">MVP 可把分段阈值做成常量配置；后续再允许用户微调权重，但首发建议锁死默认权重以免失控。</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="asset" class="section">
+          <div class="section-head">
+            <div class="num">05</div>
+            <h2>资产模型</h2>
+            <p>资产值是各笔动态入账的累计；打开次数与金额成对出现，但金额不再等于次数×10。</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="content-block">
+              <h3>基础账本</h3>
+              <table aria-label="资产公式">
+                <tbody>
+                  <tr>
+                    <th>单笔入账</th>
+                    <td>由权重公式生成，MIN～CAP，默认 0.30～10.00 元。</td>
+                  </tr>
+                  <tr>
+                    <th>今日资产</th>
+                    <td>今日所有有效入账之和。</td>
+                  </tr>
+                  <tr>
+                    <th>累计资产</th>
+                    <td>历史所有有效入账之和。</td>
+                  </tr>
+                  <tr>
+                    <th>显示方式</th>
+                    <td>打开次数、今日入账、最近一笔金额与原因说明成组出现。</td>
+                  </tr>
+                  <tr>
+                    <th>重置逻辑</th>
+                    <td>日计数可按自然日滚动；累计资产默认不清零，除非用户主动重置。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="callout">
+              <strong>默认把“钱”当作语言，而不是承诺；把“随机”当作波动，而不是赌场。</strong>
+              <p>
+                单笔上限 10 元保留原来的心理锚点，但大多数正常浏览会落在中低区间，避免鼓励狂刷。
+                v1 不对接真实支付或提现，先把动态记账和成就体验做稳。
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="reality" class="section">
+          <div class="section-head">
+            <div class="num">06</div>
+            <h2>现实关联</h2>
+            <p>资产值的意义不只是“更多”，而是能推动现实中的一个动作。</p>
+          </div>
+
+          <div class="grid-3">
+            <article class="mode">
+              <div class="head">
+                <strong>储蓄导向</strong>
+                <span>默认方向</span>
+              </div>
+              <p>把资产值绑定到一个真实储蓄目标，比如旅行基金、电子产品基金或应急金。</p>
+              <ul>
+                <li>达到阈值后，提醒用户转入实际账户。</li>
+                <li>让“网页点击”变成一笔看得见的积累。</li>
+                <li>适合想把浏览习惯和理财习惯挂钩的人。</li>
+              </ul>
+            </article>
+
+            <article class="mode">
+              <div class="head">
+                <strong>消费克制</strong>
+                <span>辅助模式</span>
+              </div>
+              <p>当资产跨过某个阶段，就触发一次现实世界的消费检查，而不是立刻奖励自己。</p>
+              <ul>
+                <li>检查购物车、订阅和冲动消费。</li>
+                <li>把浏览行为和预算纪律关联起来。</li>
+                <li>更像一个温和的财务刹车。</li>
+              </ul>
+            </article>
+
+            <article class="mode">
+              <div class="head">
+                <strong>行动导向</strong>
+                <span>轻量提醒</span>
+              </div>
+              <p>如果用户不想谈钱，也可以把资产阈值映射成现实动作，比如记账、喝水、起身、整理桌面。</p>
+              <ul>
+                <li>让资产值成为现实动作的触发器。</li>
+                <li>避免数字只在屏幕上滚动。</li>
+                <li>保留钱与行为两条连接线。</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section id="achievements" class="section">
+          <div class="section-head">
+            <div class="num">07</div>
+            <h2>成就系统</h2>
+            <p>成就不要像任务清单，最好像一张和现实更接近的账单摘要。</p>
+          </div>
+
+          <div class="milestone-grid">
+            <div class="milestone-row">
+              <div>
+                <strong>开始记账</strong>
+                <p>累计资产达到 ¥300。提示用户记录今天这批入账主要发生在什么浏览场景里。</p>
+              </div>
+              <div>
+                <strong>守住第一笔冲动</strong>
+                <p>累计资产达到 ¥1,000。建议暂停一次非必要消费，或把一笔钱从“想买”改成“先等等”。</p>
+              </div>
+              <div class="milestone-tag">现实动作</div>
+            </div>
+
+            <div class="milestone-row">
+              <div>
+                <strong>把钱留住</strong>
+                <p>累计资产达到 ¥3,000。引导用户转入一个真实储蓄目标，哪怕只是很小的一笔。</p>
+              </div>
+              <div>
+                <strong>月底有余</strong>
+                <p>累计资产达到 ¥10,000。触发一次月度复盘，看看动态入账和现实开销之间发生了什么。</p>
+              </div>
+              <div class="milestone-tag">钱本位</div>
+            </div>
+
+            <div class="milestone-row">
+              <div>
+                <strong>从浏览到决定</strong>
+                <p>当用户连续几天都把资产值用于同一个现实目标时，说明产品真的接上了生活。</p>
+              </div>
+              <div>
+                <strong>看见自己的预算曲线</strong>
+                <p>把入账流水做成周视图，用户能看到“网页行为”和“现实钱袋”之间的关系。</p>
+              </div>
+              <div class="milestone-tag">叙事感</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="ui" class="section">
+          <div class="section-head">
+            <div class="num">08</div>
+            <h2>展示与交互</h2>
+            <p>popup 要像账本摘要：今天存了多少、最近一笔为什么、离下一个现实动作还差多少。</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="content-block">
+              <h3>Popup 信息层级</h3>
+              <p>第一眼看到今日入账总额，第二眼看到最近一笔与原因，第三眼看到现实动作或下一个阈值。不要把用户推进复杂表格。</p>
+              <div class="accent-line"></div>
+              <dl class="definition-list">
+                <div class="definition-row">
+                  <dt>第一行</dt>
+                  <dd>今天打开：238 页 · 今日入账：¥1,246.80。</dd>
+                </div>
+                <div class="definition-row">
+                  <dt>第二行</dt>
+                  <dd>最近一笔：+¥6.42（停留 28s · 加载正常 · 新域名）。</dd>
+                </div>
+                <div class="definition-row">
+                  <dt>第三行</dt>
+                  <dd>离下一个现实成就：¥1,160。</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="content-block">
+              <h3>页面气质</h3>
+              <p>它应该像一张会滚动的温和账单，也像一张小型财务看板，安静、明确、略带仪式感。</p>
+              <div class="accent-line"></div>
+              <dl class="definition-list">
+                <div class="definition-row">
+                  <dt>视觉关键词</dt>
+                  <dd>账本、入账流水、金额、曲线、阈值、低饱和强调色。</dd>
+                </div>
+                <div class="definition-row">
+                  <dt>交互关键词</dt>
+                  <dd>开箱即懂、低打扰、少配置、金额可解释、随时可重置目标。</dd>
+                </div>
+                <div class="definition-row">
+                  <dt>默认主张</dt>
+                  <dd>“你今天浏览的，不只是网页，也是一笔笔往账本里存的钱。”</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <section id="mvp" class="section">
+          <div class="section-head">
+            <div class="num">09</div>
+            <h2>MVP 边界</h2>
+            <p>先把动态入账公式和现实映射做稳，再考虑可调权重或更丰富的账户玩法。</p>
+          </div>
+
+          <div class="grid-3">
+            <div class="content-block">
+              <h3>首发应做</h3>
+              <p>有效打开统计、四指标采样、权重公式入账、今日/累计资产、最近一笔说明、现实成就提示、本地存储、重置入口。</p>
+            </div>
+            <div class="content-block">
+              <h3>首发可不做</h3>
+              <p>用户自定义权重、复杂金融账户、提现、跨设备同步、排行榜、社交传播、花哨奖励动画。</p>
+            </div>
+            <div class="content-block">
+              <h3>后续再做</h3>
+              <p>权重微调、目标账户、月度预算、储蓄计划、消费复盘、倍率模式、个人化成就模板、周/月资产摘要。</p>
+            </div>
+          </div>
+
+          <div class="footer-note">
+            这版的关键是把“打开”变成“可解释的一笔存入”，再把“累计资产”变成“现实动作”，中间不要绕太远。
+          </div>
+        </section>
+
+        <section id="privacy" class="section">
+          <div class="section-head">
+            <div class="num">10</div>
+            <h2>数据与隐私</h2>
+            <p>用户愿意把网页变成钱，前提是他知道指标和流水只留在本地。</p>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <h3>建议保存的数据</h3>
+              <table aria-label="数据模型">
+                <tbody>
+                  <tr>
+                    <th>visitCount</th>
+                    <td>今日打开数、累计打开数。</td>
+                  </tr>
+                  <tr>
+                    <th>assetLedger</th>
+                    <td>今日/累计资产；最近 N 笔入账（金额、时间、四项分、简短原因）。</td>
+                  </tr>
+                  <tr>
+                    <th>metricCache</th>
+                    <td>结算所需的停留、加载耗时、域名新鲜度缓存；过期即删。</td>
+                  </tr>
+                  <tr>
+                    <th>recentVisits</th>
+                    <td>短时间重复去重所需的最小 URL 历史。</td>
+                  </tr>
+                  <tr>
+                    <th>goalProfile</th>
+                    <td>用户绑定的真实储蓄目标、预算目标或现实动作模板。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="callout">
+              <strong>隐私原则应该非常直白。</strong>
+              <p>
+                1. 本地优先，不上传完整浏览历史与入账流水。<br />
+                2. 只采导航与性能类指标，不做页面正文/截图分析。<br />
+                3. 真实钱目标由用户自己定义，默认不接支付。<br />
+                4. 用户随时可重置打开数、资产值、流水和目标。
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="risks" class="section">
+          <div class="section-head">
+            <div class="num">11</div>
+            <h2>风险与开放问题</h2>
+            <p>动态金额更有账本感，也更容易在公平性和可解释性上翻车。</p>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <h3>主要风险</h3>
+              <ul class="open-list">
+                <li>若停留结算不准（后台标签、休眠），入账会不公平，用户很快失去信任。</li>
+                <li>若权重让“狂开新站”总能接近 10 元，会诱导刷页；需用停留主权重与去重压住。</li>
+                <li>随机噪声过大时，用户会觉得像抽奖而不是账本。</li>
+                <li>若未来接真实资金能力，合规和安全要求会立刻上一个台阶。</li>
+              </ul>
+            </div>
+            <div>
+              <h3>待定问题</h3>
+              <ul class="open-list">
+                <li>默认权重 0.45/0.20/0.20/0.15 是否要在内测后微调。</li>
+                <li>Noise 区间 ±8% 是否合适，要不要改成固定小数抖动。</li>
+                <li>同一网页隔多久再访问应重新入账；去重窗与新鲜度如何联动。</li>
+                <li>现实成就是只做提醒，还是接到具体储蓄/预算工具。</li>
+                <li>是否需要周报、月报和按指标拆解的资产摘要页。</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <div class="footer">
+          本页为概念 PRD 草案 v0.3：固定 1 页 = ¥10 已改为四指标权重动态入账（单次 ≤ ¥10）。
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const navLinks = Array.from(document.querySelectorAll('.toc a[href^="#"]'));
+    const sections = navLinks
+      .map((link) => document.querySelector(link.getAttribute('href')))
+      .filter(Boolean);
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (!visible) return;
+
+        navLinks.forEach((link) => link.removeAttribute('aria-current'));
+        const active = navLinks.find((link) => link.getAttribute('href') === `#${visible.target.id}`);
+        if (active) {
+          active.setAttribute('aria-current', 'true');
+        }
+      }, {
+        rootMargin: '-35% 0px -50% 0px',
+        threshold: [0.15, 0.25, 0.4]
+      });
+
+      sections.forEach((section) => observer.observe(section));
+    }
+  </script>
+</body>
+</html>

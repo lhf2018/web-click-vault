@@ -1,0 +1,18 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.tmp
+
+# Logs / local
+*.log
+.env
+.env.*
+
+# Build / deps (none yet, keep for later)
+node_modules/
+dist/
+.cache/

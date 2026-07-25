@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "网页资产计",
+  "description": "把每次有效网页打开按多指标权重动态存入一笔本地账本（单次 ≤ ¥10）。数据仅保存在本机。",
+  "version": "0.2.0",
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_title": "网页资产计",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "options_page": "options/index.html",
+  "permissions": [
+    "storage",
+    "tabs",
+    "windows",
+    "webNavigation",
+    "alarms"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content/dwell-probe.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}

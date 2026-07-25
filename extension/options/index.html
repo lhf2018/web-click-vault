@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>网页资产计 · 设置</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <main class="wrap">
+    <header class="hero">
+      <div class="kicker">Local Ledger · Options</div>
+      <h1>网页资产计</h1>
+      <p>把浏览收成一笔笔本地账。数据只在本机，不做正文分析，不上传历史。</p>
+    </header>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>计数策略</h2>
+        <p>默认忽略 SPA 同文档路由，宁可少算也不虚胖。</p>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="countSpa" />
+        <span>
+          <strong>计入 SPA / History 路由</strong>
+          <em>开启后，pushState 换路径也会结算并开新会话。默认关闭。</em>
+        </span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="showFormula" checked />
+        <span>
+          <strong>显示公式拆解</strong>
+          <em>在下方展示最近一笔的四项得分与噪声。</em>
+        </span>
+      </label>
+      <p class="hint" id="settingsHint"></p>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>近 7 日</h2>
+        <p>跨日会自动归档到周曲线。</p>
+      </div>
+      <div class="week-board" id="weekBoard"></div>
+    </section>
+
+    <section class="card" id="formulaCard">
+      <div class="card-head">
+        <h2>公式可观测</h2>
+        <p>最近一笔入账的权重拆解，便于调参与排错。</p>
+      </div>
+      <div id="formulaPanel" class="formula-empty">暂无入账记录。结算一笔后这里会显示明细。</div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>当前摘要</h2>
+        <p>打开 Popup 可看今日流水、周视图与会话恢复提示。</p>
+      </div>
+      <dl class="stats">
+        <div><dt>今日打开</dt><dd id="sVisits">0</dd></div>
+        <div><dt>至今访问</dt><dd id="sTotalVisits">0</dd></div>
+        <div><dt>今日入账</dt><dd id="sToday">¥0.00</dd></div>
+        <div><dt>累计资产</dt><dd id="sTotal">¥0.00</dd></div>
+      </dl>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>账本操作</h2>
+        <p>重置只影响本地数据，无法撤销。</p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn ghost" id="resetToday">重置今日</button>
+        <button type="button" class="btn danger" id="resetAll">重置全部数据</button>
+      </div>
+    </section>
+
+    <section class="card soft">
+      <div class="card-head">
+        <h2>隐私与规则</h2>
+      </div>
+      <ul class="rules">
+        <li>停留由页面可见性探针累计，后台标签不继续涨。</li>
+        <li>会话写入本地；异常关闭后可在 Popup 补结算。</li>
+        <li>金额由停留、加载、新鲜度、页面类型加权，单次 ≤ ¥10。</li>
+      </ul>
+    </section>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

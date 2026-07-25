@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>网页资产计</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true"></div>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <div class="kicker">Internet Asset Meter</div>
+          <h1>网页资产计</h1>
+        </div>
+      </div>
+      <button type="button" class="icon-btn" id="openOptions" title="设置" aria-label="打开设置">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6" />
+        </svg>
+      </button>
+    </header>
+
+    <section class="recover hidden" id="recoverBox">
+      <div class="recover-title">发现未结算会话</div>
+      <p id="recoverHint">浏览器重启或标签异常关闭后留下的账本草稿，可补结算或丢弃。</p>
+      <div class="recover-actions">
+        <button type="button" class="btn soft" id="recoverSettle">补结算</button>
+        <button type="button" class="btn ghost-mini" id="recoverDiscard">丢弃</button>
+      </div>
+    </section>
+
+    <section class="ledger-hero">
+      <div class="hero-label">今日入账</div>
+      <div class="hero-amount" id="todayAsset">¥0.00</div>
+      <div class="hero-sub">
+        <span id="todayVisits">今日 0 次</span>
+        <span class="dot">·</span>
+        <span id="totalVisits">至今 0 页</span>
+      </div>
+      <div class="totals-row">
+        <span class="label">累计资产</span>
+        <strong id="totalAsset">¥0.00</strong>
+      </div>
+    </section>
+
+    <section class="week" id="weekSection">
+      <div class="week-head">
+        <span class="week-label">近 7 日入账</span>
+        <strong id="weekTotal">¥0.00</strong>
+      </div>
+      <div class="week-chart" id="weekChart" aria-label="近七日报表"></div>
+    </section>
+
+    <section class="slip" id="lastEntry">
+      <div class="slip-head">
+        <span class="slip-tag">最近一笔</span>
+        <span class="slip-host" id="lastHost"></span>
+      </div>
+      <div class="slip-amount" id="lastAmount">—</div>
+      <p class="slip-reason" id="lastReason">还没有入账记录</p>
+    </section>
+
+    <section class="trail" id="trailSection">
+      <div class="trail-label">今日流水</div>
+      <div class="trail-list" id="trailList"></div>
+    </section>
+
+    <section class="achieve hidden" id="achieveBox">
+      <div class="achieve-kicker">现实成就</div>
+      <div class="achieve-title" id="achieveTitle">—</div>
+      <p id="achieveHint"></p>
+      <button type="button" class="btn soft" id="dismissAchieve">收下提醒</button>
+    </section>
+  </div>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
