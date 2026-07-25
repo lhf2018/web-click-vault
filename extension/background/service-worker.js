@@ -11,6 +11,7 @@ import {
   onTabRemoved,
   onWindowFocusChanged,
   refreshBadge,
+  scanOrphanSessions,
   settleIfDwellCapped,
   settleRecoveries,
   settleSession,
@@ -73,7 +74,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await refreshBadge();
   }
   if (alarm.name === "orphanScan") {
-    const { scanOrphanSessions } = await import("./session-tracker.js");
     await scanOrphanSessions();
   }
 });
