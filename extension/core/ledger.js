@@ -1,3 +1,5 @@
+import { ensureWeek, recordWeeklyVisit, WEEKLY_TASKS, taskProgress, weekKey } from "./weekly.js";
+import { depositMultiplier } from "./shop.js";
 import {
   ACHIEVEMENTS,
   DAILY_HISTORY_DAYS,
@@ -37,6 +39,10 @@ export function defaultState() {
     todayAsset: 0,
     totalVisits: 0,
     totalAsset: 0,
+    shopSpent: 0,
+    shopLevels: {},
+    shopPurchases: [],
+    weekly: ensureWeek({}).weekly,
     recentEntries: [],
     recentVisitMap: {},
     hostDayMap: {},
@@ -98,15 +104,30 @@ export function nextThreshold(totalAsset, unlocked) {
  */
 export function applyDeposit(state, entry, formulaDetail = null) {
   let next = ensureDayRollover(state);
+  const reward = entry.kind === "task_reward";
+  next = reward ? ensureWeek(next) : recordWeeklyVisit(next, entry);
+  const baseAmount = entry.amount;
+  const { multiplier, extras } = reward ? { multiplier: 1, extras: [] } : depositMultiplier(next, entry.metrics);
+  const effectReason = extras.length ? ` · 触发：${extras.map(item=>item.name).join("、")}` : "";
+  entry = {
+    ...entry,
+    amount: round2(baseAmount * multiplier),
+    reason: multiplier > 1 ? `${entry.reason || "浏览入账"} · 商店加成 ×${multiplier}${effectReason}` : entry.reason,
+  };
+  if (formulaDetail) formulaDetail = { ...formulaDetail, baseAmount, multiplier, extras, amount: entry.amount, reason: entry.reason };
   const before = next.totalAsset;
   const after = round2(before + entry.amount);
 
   const fullEntry = {
+    kind: entry.kind || "browse",
+    extras,
     id: entry.id || cryptoRandomId(),
     ts: entry.ts || Date.now(),
     url: entry.url,
     host: entry.host,
     amount: entry.amount,
+    baseAmount,
+    multiplier,
     score: entry.score,
     metrics: entry.metrics,
     reason: entry.reason,
@@ -123,7 +144,7 @@ export function applyDeposit(state, entry, formulaDetail = null) {
     }
   }
 
-  const todayVisits = next.todayVisits + 1;
+  const todayVisits = next.todayVisits + (reward ? 0 : 1);
   const todayAsset = round2(next.todayAsset + entry.amount);
   const dailyHistory = pruneDailyHistory({
     ...(next.dailyHistory || {}),
@@ -134,7 +155,7 @@ export function applyDeposit(state, entry, formulaDetail = null) {
     ...next,
     todayVisits,
     todayAsset,
-    totalVisits: next.totalVisits + 1,
+    totalVisits: next.totalVisits + (reward ? 0 : 1),
     totalAsset: after,
     recentEntries,
     dailyHistory,
@@ -191,4 +212,15 @@ export function buildWeekSeries(state, days = 7) {
     });
   }
   return series;
+}
+
+export function claimWeeklyReward(state, taskId, expectedWeek = weekKey()) {
+  const next = ensureWeek(ensureDayRollover(state));
+  if (expectedWeek !== next.weekly.weekKey) throw new Error("本周任务已刷新，请重新查看任务");
+  const task = WEEKLY_TASKS.find(task=>task.id===taskId);
+  if (!task) throw new Error("任务不存在");
+  if (next.weekly.claimed.includes(taskId)) throw new Error("奖励已经领取");
+  if (taskProgress(next,task)<task.target) throw new Error("任务尚未完成");
+  const credited = applyDeposit(next,{kind:"task_reward", amount:task.reward, host:"每周探索任务", reason:`每周任务奖励 · ${task.title}`});
+  return { ...credited, weekly:{...credited.weekly,claimed:[...credited.weekly.claimed,taskId]} };
 }

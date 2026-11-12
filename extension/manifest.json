@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "网页资产计",
-  "description": "把每次有效网页打开按多指标权重动态存入一笔本地账本（单次 ≤ ¥10）。数据仅保存在本机。",
-  "version": "0.2.0",
+  "description": "把每次有效网页打开按多指标权重动态存入一笔本地账本（基础单次 ≤ ¥10，支持商店收益升级）。数据仅保存在本机。",
+  "version": "0.5.1",
   "action": {
     "default_popup": "popup/index.html",
     "default_title": "网页资产计",

@@ -8,7 +8,6 @@ import {
   loadSessions,
   loadState,
   saveSessions,
-  saveState,
   updateState,
 } from "../storage/repository.js";
 
@@ -260,6 +259,7 @@ export async function settleSessionData(session, opts = {}) {
         amount: deposit.deposit,
         score: deposit.score,
         metrics: {
+          freshKind,
           dwellMs: effectiveDwell,
           loadMs,
           dwell: scores.dwell,
@@ -361,6 +361,8 @@ export async function onTabRemoved(tabId) {
  * Find sessions whose tabs are gone; queue for recovery UI instead of silently dropping.
  */
 export async function scanOrphanSessions() {
+  // Also drain records saved by an earlier extension run, even if no new orphans exist.
+  await maybeAutoSettleRecoveries();
   const sessions = await loadSessions();
   let liveIds = new Set();
   try {
@@ -408,14 +410,24 @@ export async function scanOrphanSessions() {
     return { ...state, pendingRecoveries: unique };
   });
 
+  await maybeAutoSettleRecoveries();
   return orphans;
 }
 
-export async function settleRecoveries() {
+async function maybeAutoSettleRecoveries() {
   const state = await loadState();
-  const list = [...(state.pendingRecoveries || [])];
-  state.pendingRecoveries = [];
-  await saveState(state);
+  if (state.settings?.autoSettleRecoveries && state.pendingRecoveries?.length) {
+    return settleRecoveries();
+  }
+  return state;
+}
+
+export async function settleRecoveries() {
+  let list = [];
+  await updateState((state) => {
+    list = [...(state.pendingRecoveries || [])];
+    return { ...state, pendingRecoveries: [] };
+  });
 
   for (const item of list) {
     await settleSessionData(item, { removeTabId: null });
@@ -515,18 +527,16 @@ export async function settleIfDwellCapped() {
 }
 
 export async function dismissAchievement() {
-  const state = await loadState();
-  state.pendingAchievement = null;
-  await saveState(state);
-  return state;
+  return updateState((state) => ({ ...state, pendingAchievement: null }));
 }
 
 export async function updateSettings(patch) {
-  return updateState((state) => ({
+  await updateState((state) => ({
     ...state,
     settings: {
       ...(state.settings || {}),
       ...patch,
     },
   }));
+  return maybeAutoSettleRecoveries();
 }

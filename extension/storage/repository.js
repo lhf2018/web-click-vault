@@ -1,5 +1,6 @@
+import { ensureWeek } from "../core/weekly.js";
 import { defaultState, ensureDayRollover } from "../core/ledger.js";
-import { DEFAULT_SETTINGS } from "../core/constants.js";
+import { DEFAULT_SETTINGS, SCHEMA_VERSION } from "../core/constants.js";
 
 const STORAGE_KEY = "assetMeterState";
 const SESSIONS_KEY = "assetMeterSessions";
@@ -7,7 +8,7 @@ const SESSIONS_KEY = "assetMeterSessions";
 /**
  * @returns {Promise<ReturnType<typeof defaultState>>}
  */
-export async function loadState() {
+async function readState() {
   const data = await chrome.storage.local.get(STORAGE_KEY);
   const raw = data[STORAGE_KEY];
   if (!raw || typeof raw !== "object") {
@@ -18,15 +19,17 @@ export async function loadState() {
   const merged = {
     ...defaultState(),
     ...raw,
+    schemaVersion: SCHEMA_VERSION,
     settings: { ...DEFAULT_SETTINGS, ...(raw.settings || {}) },
     dailyHistory: raw.dailyHistory || {},
     pendingRecoveries: raw.pendingRecoveries || [],
     lastFormula: raw.lastFormula || null,
   };
-  const rolled = ensureDayRollover(merged);
+  const rolled = ensureWeek(ensureDayRollover(merged));
   if (
     rolled.dayKey !== raw.dayKey ||
     rolled.schemaVersion !== raw.schemaVersion ||
+    rolled.weekly !== raw.weekly ||
     !raw.settings
   ) {
     await saveState(rolled);
@@ -37,18 +40,28 @@ export async function loadState() {
 /**
  * @param {ReturnType<typeof defaultState>} state
  */
-export async function saveState(state) {
+async function saveState(state) {
   await chrome.storage.local.set({ [STORAGE_KEY]: state });
 }
 
 /**
  * @param {(state: ReturnType<typeof defaultState>) => ReturnType<typeof defaultState> | Promise<ReturnType<typeof defaultState>>} mutator
  */
-export async function updateState(mutator) {
-  const current = await loadState();
-  const next = await mutator(current);
-  await saveState(next);
-  return next;
+let stateQueue = Promise.resolve();
+export function loadState() {
+  const operation = stateQueue.then(() => readState());
+  stateQueue = operation.catch(() => {});
+  return operation;
+}
+export function updateState(mutator) {
+  const operation = stateQueue.then(async () => {
+    const current = await readState();
+    const next = await mutator(current);
+    await saveState(next);
+    return next;
+  });
+  stateQueue = operation.catch(() => {});
+  return operation;
 }
 
 export async function resetToday() {
@@ -66,10 +79,10 @@ export async function resetToday() {
 }
 
 export async function resetAll() {
-  const fresh = defaultState();
-  await saveState(fresh);
-  await chrome.storage.local.remove([SESSIONS_KEY, "assetMeterPendingCommits"]);
-  return fresh;
+  return updateState(async () => {
+    await chrome.storage.local.remove([SESSIONS_KEY, "assetMeterPendingCommits"]);
+    return defaultState();
+  });
 }
 
 /**
