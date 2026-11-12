@@ -11,7 +11,7 @@ export const DEDUPE_WINDOW_MS = 90_000;
 export const DWELL_CAP_MS = 180_000;
 export const RECENT_ENTRIES_LIMIT = 50;
 export const DAILY_HISTORY_DAYS = 14;
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 4;
 
 export const ACHIEVEMENTS = [
   {
@@ -45,4 +45,6 @@ export const DEFAULT_SETTINGS = {
   countSpaNavigations: false,
   /** 设置页显示公式拆解 */
   showFormulaDebug: true,
+  /** 自动入账异常关闭留下的未结算会话；旧用户默认保留手动确认 */
+  autoSettleRecoveries: false,
 };

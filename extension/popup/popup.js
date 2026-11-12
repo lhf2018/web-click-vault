@@ -1,3 +1,5 @@
+import { walletBalance, incomeMultiplier } from "../core/shop.js";
+
 function money(n) {
   const v = Number(n) || 0;
   return `¥${v.toFixed(2)}`;
@@ -46,6 +48,7 @@ function render(state, week) {
   document.getElementById("totalAsset").textContent = money(state.totalAsset);
 
   renderWeek(week || []);
+  renderShop(state);
 
   const recoveries = state.pendingRecoveries || [];
   const recoverBox = document.getElementById("recoverBox");
@@ -125,6 +128,20 @@ document.getElementById("recoverDiscard").addEventListener("click", async () => 
 
 document.getElementById("openOptions").addEventListener("click", () => {
   chrome.runtime.openOptionsPage();
+});
+
+
+function renderShop(state) {
+  document.getElementById("walletBalance").textContent = money(walletBalance(state));
+  document.getElementById("shopMultiplier").textContent = `×${incomeMultiplier(state)} 常驻收益`;
+}
+
+document.getElementById("openShop").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("shop/index.html") });
+});
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.assetMeterState) refresh().catch(() => {});
 });
 
 refresh();

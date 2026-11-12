@@ -34,7 +34,14 @@
           <em>在下方展示最近一笔的四项得分与噪声。</em>
         </span>
       </label>
-      <p class="hint" id="settingsHint"></p>
+      <label class="toggle">
+        <input type="checkbox" id="autoSettleRecoveries" />
+        <span>
+          <strong>自动补结算</strong>
+          <em>开启后，自动将异常关闭或扩展重启留下的未结算会话入账，不再逐次询问。开启时也会处理当前待补结算记录。</em>
+        </span>
+      </label>
+      <p class="hint" id="settingsHint" role="status"></p>
     </section>
 
     <section class="card">

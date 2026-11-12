@@ -67,6 +67,8 @@ function renderFormula(state) {
     </div>
     <p class="formula-meta">
       ${f.reason || ""}<br />
+      ${(f.extras || []).map(effect => `${effect.name}：额外 +${Math.round(effect.bonus*100)}%`).join(" · ")}<br />
+      ${f.multiplier > 1 ? `基础入账 ${money(f.baseAmount)} × 商店倍率 ${f.multiplier}<br />` : ""}
       停留 ${Math.round((f.dwellMs || 0) / 1000)}s · 加载 ${Math.round(f.loadMs || 0)}ms ·
       新鲜度 ${f.freshKind || "-"} · 来源 ${f.dwellSource === "probe" ? "可见性探针" : "标签估算"}
     </p>
@@ -82,34 +84,57 @@ function fill(state, week) {
   document.getElementById("countSpa").checked = !!state.settings?.countSpaNavigations;
   document.getElementById("showFormula").checked = state.settings?.showFormulaDebug !== false;
 
+  document.getElementById("autoSettleRecoveries").checked = state.settings?.autoSettleRecoveries === true;
+
   renderWeek(week);
   renderFormula(state);
 }
 
-async function refresh() {
-  const res = await request("GET_STATE");
-  if (res?.ok) fill(res.state, res.week);
-}
+const settingInputs = {
+  countSpaNavigations: document.getElementById("countSpa"),
+  showFormulaDebug: document.getElementById("showFormula"),
+  autoSettleRecoveries: document.getElementById("autoSettleRecoveries"),
+};
+let settingsRevision = 0;
+let saveQueue = Promise.resolve();
 
-async function saveSettings() {
-  const res = await request("SET_SETTINGS", {
-    countSpaNavigations: document.getElementById("countSpa").checked,
-    showFormulaDebug: document.getElementById("showFormula").checked,
-  });
-  const hint = document.getElementById("settingsHint");
-  if (res?.ok) {
-    fill(res.state, res.week);
-    hint.textContent = "策略已更新。";
-    setTimeout(() => {
-      if (hint.textContent === "策略已更新。") hint.textContent = "";
-    }, 1800);
-  } else {
-    hint.textContent = res?.error || "保存失败";
+async function refresh() {
+  const revision = settingsRevision;
+  try {
+    const res = await request("GET_STATE");
+    if (res?.ok && revision === settingsRevision) fill(res.state, res.week);
+  } catch {
+    document.getElementById("settingsHint").textContent = "无法连接扩展后台，请重新加载扩展后打开设置。";
   }
 }
 
-document.getElementById("countSpa").addEventListener("change", saveSettings);
-document.getElementById("showFormula").addEventListener("change", saveSettings);
+function saveSetting(key, input) {
+  const value = input.checked;
+  const revision = ++settingsRevision;
+  const hint = document.getElementById("settingsHint");
+  hint.textContent = "正在保存…";
+  // Save only the changed setting; older replies must not undo a newer click.
+  saveQueue = saveQueue.then(async () => {
+    try {
+      const res = await request("SET_SETTINGS", { [key]: value });
+      if (!res?.ok) throw new Error(res?.error || "保存失败，请重试。");
+      if (res.state?.settings?.[key] !== value) {
+        throw new Error("扩展后台仍是旧版本，设置尚未保存。请到 chrome://extensions 重新加载「网页资产计」，再重新打开设置。" );
+      }
+      if (revision === settingsRevision) {
+        fill(res.state, res.week);
+        hint.textContent = "设置已保存。";
+      }
+    } catch (error) {
+      if (revision === settingsRevision) hint.textContent = error.message || "保存失败，请重试。";
+    }
+  });
+  return saveQueue;
+}
+
+for (const [key, input] of Object.entries(settingInputs)) {
+  input.addEventListener("change", () => saveSetting(key, input));
+}
 
 document.getElementById("resetToday").addEventListener("click", async () => {
   if (!confirm("确定重置今日打开数与今日入账？累计资产会保留。")) return;

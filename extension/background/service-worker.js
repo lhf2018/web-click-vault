@@ -1,3 +1,4 @@
+import { purchaseUpgrade } from "../core/shop.js";
 import {
   applyDwellFromProbe,
   discardRecoveries,
@@ -17,8 +18,8 @@ import {
   settleSession,
   updateSettings,
 } from "./session-tracker.js";
-import { loadState, resetAll, resetToday } from "../storage/repository.js";
-import { buildWeekSeries } from "../core/ledger.js";
+import { loadState, resetAll, resetToday, updateState } from "../storage/repository.js";
+import { buildWeekSeries, claimWeeklyReward } from "../core/ledger.js";
 
 chrome.runtime.onInstalled.addListener(async () => {
   await loadState();
@@ -89,6 +90,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ ok: true });
         return;
       }
+      if (message?.type === "CLAIM_WEEKLY_REWARD") {
+        const state = await updateState(current => claimWeeklyReward(current, message.taskId, message.weekKey));
+        await refreshBadge();
+        sendResponse({ ok: true, state, week: buildWeekSeries(state,7) });
+        return;
+      }
+      if (message?.type === "BUY_UPGRADE") {
+        const state = await updateState((current) => purchaseUpgrade(current, message.itemId));
+        sendResponse({ ok: true, state, week: buildWeekSeries(state, 7) });
+        return;
+      }
       if (message?.type === "GET_STATE") {
         const state = await loadState();
         const week = buildWeekSeries(state, 7);
@@ -135,6 +147,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
         if (typeof message.showFormulaDebug === "boolean") {
           patch.showFormulaDebug = message.showFormulaDebug;
+        }
+        if (typeof message.autoSettleRecoveries === "boolean") {
+          patch.autoSettleRecoveries = message.autoSettleRecoveries;
         }
         const state = await updateSettings(patch);
         sendResponse({
