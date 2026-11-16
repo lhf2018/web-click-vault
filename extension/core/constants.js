@@ -11,7 +11,7 @@ export const DEDUPE_WINDOW_MS = 90_000;
 export const DWELL_CAP_MS = 180_000;
 export const RECENT_ENTRIES_LIMIT = 50;
 export const DAILY_HISTORY_DAYS = 14;
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 6;
 
 export const ACHIEVEMENTS = [
   {

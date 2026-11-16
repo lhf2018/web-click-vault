@@ -62,7 +62,7 @@ export function itemPrice(item, level) {
 }
 
 export function walletBalance(state) {
-  return Math.max(0, Math.round(((state.totalAsset || 0) - (state.shopSpent || 0)) * 100) / 100);
+  return Math.max(0, Math.round(((state.totalAsset || 0) - (state.shopSpent || 0) - (state.estateSpent || 0) - (state.companySpent || 0)) * 100) / 100);
 }
 
 export function incomeMultiplier(state) {

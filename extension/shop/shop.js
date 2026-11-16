@@ -1,4 +1,4 @@
-import { WEEKLY_TASKS, ensureWeek, taskProgress } from "../core/weekly.js";
+import { ensureWeek } from "../core/weekly.js";
 import { SHOP_ITEMS, SHOP_CATEGORIES, itemLevel, itemPrice, walletBalance, incomeMultiplier, unlockInfo, depositMultiplier } from '../core/shop.js';
 const $ = id => document.getElementById(id);
 const money = value => `¥${(Number(value)||0).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
@@ -24,11 +24,8 @@ function render() {
   if (!state) return;
   $('balance').textContent = money(walletBalance(state));
   $('multiplier').textContent = `×${incomeMultiplier(state)}`;
-  $('collection').textContent = `${SHOP_ITEMS.filter(item => itemLevel(state,item)>0).length} / ${SHOP_ITEMS.length}`;
-  $('levels').textContent = `共 ${SHOP_ITEMS.reduce((sum,item)=>sum+itemLevel(state,item),0)} 级永久升级`;
   $('spent').textContent = money(state.shopSpent);
   renderProducts();
-  renderGrowth();
   $('purchases').replaceChildren();
   const purchases = state.shopPurchases || [];
   if (!purchases.length) {
@@ -138,42 +135,4 @@ function scenarioMetrics() {
   const value = $('scenario').value;
   return {freshKind:['first_host','seen_path','new_path'].includes(value) ? value : 'default',
     dwellMs: value==='extended'?120000 : value==='deep'?60000 : value==='normal'?0:15000};
-}
-function renderGrowth() {
-  const count = SHOP_ITEMS.filter(item=>unlockInfo(state,item).unlocked).length;
-  $('unlockCount').textContent = `已解锁 ${count} / ${SHOP_ITEMS.length}`;
-  $('roadmap').replaceChildren();
-  for (const item of [...SHOP_ITEMS].sort((a,b)=>a.asset-b.asset)) {
-    const info = unlockInfo(state,item);
-    const row = document.createElement('div');
-    row.className = `unlock-step${info.unlocked?' unlocked':''}`;
-    row.innerHTML = `<strong>${info.unlocked?'✓':'◇'} ${item.name}</strong><small>${info.hint}</small><progress value="${info.progress}" max="1" aria-label="${item.name}解锁进度"></progress>`;
-    $('roadmap').append(row);
-  }
-  $('weekLabel').textContent = `本周起始 ${state.weekly.weekKey}`;
-  $('weeklyTasks').replaceChildren();
-  for (const task of WEEKLY_TASKS) {
-    const progress = taskProgress(state,task);
-    const claimed = state.weekly.claimed.includes(task.id);
-    const row = document.createElement('article');
-    row.className='task-card';
-    row.innerHTML=`<div class="task-top"><h3>${task.title}</h3><strong>+${money(task.reward)}</strong></div><p>${task.description}</p><progress value="${progress}" max="${task.target}" aria-label="${task.title}进度"></progress><small>${progress} / ${task.target}</small>`;
-    const button=document.createElement('button');
-    button.type='button';button.className='buy';
-    button.textContent=claimed?'本周已领取':progress>=task.target?'领取奖励':'探索进行中';
-    button.disabled=busy||claimed||progress<task.target;
-    button.addEventListener('click',()=>claimTask(task));
-    row.append(button);$('weeklyTasks').append(row);
-  }
-}
-async function claimTask(task) {
-  if(busy)return;
-  busy=true;++revision;render();
-  try {
-    const response=await chrome.runtime.sendMessage({type:'CLAIM_WEEKLY_REWARD',taskId:task.id,weekKey:state.weekly.weekKey});
-    if(!response?.ok)throw new Error(response?.error||'领取失败');
-    state=ensureWeek(response.state);
-    $('status').textContent=`${task.title}奖励 ${money(task.reward)} 已入账。`;
-  } catch(error){$('status').textContent=error.message;}
-  finally{busy=false;await refresh();}
 }

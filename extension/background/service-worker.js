@@ -1,4 +1,6 @@
 import { purchaseUpgrade } from "../core/shop.js";
+import { purchaseEstate, upgradeEstate } from "../core/estate.js";
+import { createCompany } from '../core/company.js';
 import {
   applyDwellFromProbe,
   discardRecoveries,
@@ -96,6 +98,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ ok: true, state, week: buildWeekSeries(state,7) });
         return;
       }
+      if (message?.type === 'BUY_ESTATE' || message?.type === 'UPGRADE_ESTATE') {
+        const state = await updateState(current => message.type === 'BUY_ESTATE'
+          ? purchaseEstate(current, message.host) : upgradeEstate(current, message.host));
+        sendResponse({ ok: true, state, week: buildWeekSeries(state, 7) });
+        return;
+      }
+      if (message?.type === 'CREATE_COMPANY') {
+        const state = await updateState(current => createCompany(current, message.name, message.companyType, message.headquarters));
+        sendResponse({ ok: true, state, week: buildWeekSeries(state, 7) });
+        return;
+      }
       if (message?.type === "BUY_UPGRADE") {
         const state = await updateState((current) => purchaseUpgrade(current, message.itemId));
         sendResponse({ ok: true, state, week: buildWeekSeries(state, 7) });
@@ -105,7 +118,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const state = await loadState();
         const week = buildWeekSeries(state, 7);
         const activeSession = await getActiveSessionSnapshot();
-        sendResponse({ ok: true, state, week, activeSession });
+        sendResponse({ ok: true, state, week, activeSession, features: { companies: true } });
         return;
       }
       if (message?.type === "DISMISS_ACHIEVEMENT") {

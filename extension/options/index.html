@@ -3,17 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>网页资产计 · 设置</title>
+  <title>账本与设置 · 网页资产计</title>
+  <link rel="stylesheet" href="../shop/shop.css" />
   <link rel="stylesheet" href="options.css" />
 </head>
 <body>
-  <div class="bg" aria-hidden="true"></div>
-  <main class="wrap">
-    <header class="hero">
-      <div class="kicker">Local Ledger · Options</div>
-      <h1>网页资产计</h1>
-      <p>把浏览收成一笔笔本地账。数据只在本机，不做正文分析，不上传历史。</p>
-    </header>
+  <div class="layout">
+    <aside class="sidebar"><a class="brand" href="../popup/index.html"><span class="brand-icon">▤</span><span>网页资产计<small>你的浏览，正在积累。</small></span></a><div class="nav-label">资产实验室</div><a class="nav" href="../overview/index.html">◉ &nbsp; 资产汇总</a><a class="nav" href="../shop/index.html">◈ &nbsp; 增长商店</a><a class="nav" href="../estate/index.html">⌂ &nbsp; 我的地产</a><a class="nav" href="../company/index.html">▥ &nbsp; 我的公司</a><a class="nav" href="../achievements/index.html">✧ &nbsp; 成就</a><a class="nav active" href="../options/index.html" aria-current="page">⚙ &nbsp; 账本与设置</a><a class="nav" href="../weekly/index.html">◇ &nbsp; 每周探索任务</a><div class="sidebar-bottom"><span class="live-dot"></span> 所有积累，只在本机<br><small>这里的金额均为虚拟资产。</small></div></aside>
+  <main>
+    <header><span class="eyebrow">YOUR LOCAL LEDGER / 03</span><span class="local-tag">本地账本 · 浏览偏好</span></header>
+    <section class="hero">
+      <div><p class="eyebrow">每一份积累，都有迹可循</p><h1>看见旅程的收获，<span>找到自己的节奏。</span></h1><p class="intro">回看浏览带来的积累，调整适合你的计数方式。<br>数据只在本机，不做正文分析，不上传历史。</p></div>
+      <div class="hero-art" aria-hidden="true"><div class="orbit"></div><div class="orbit second"></div><span class="spark">▤</span><span class="art-label">EVERY VISIT COUNTS</span></div>
+    </section>
+    <dl class="stats ledger-stats" aria-label="当前账本摘要">
+      <div class="wallet"><dt>今日入账</dt><dd id="sToday">¥0.00</dd><small>今天积累的全部收入</small></div>
+      <div><dt>累计收益</dt><dd id="sTotal">¥0.00</dd><small>购买装备和地产不会减少</small></div>
+      <div><dt>今日有效浏览</dt><dd id="sVisits">0</dd><small>按有效结算次数计入</small></div>
+      <div><dt>累计有效浏览</dt><dd id="sTotalVisits">0</dd><small>每次探索，留下足迹</small></div>
+    </dl>
+    <div class="settings-grid">
 
     <section class="card">
       <div class="card-head">
@@ -52,25 +61,12 @@
       <div class="week-board" id="weekBoard"></div>
     </section>
 
-    <section class="card" id="formulaCard">
+    <section class="card wide" id="formulaCard">
       <div class="card-head">
-        <h2>公式可观测</h2>
+        <h2>收益拆解</h2>
         <p>最近一笔入账的权重拆解，便于调参与排错。</p>
       </div>
       <div id="formulaPanel" class="formula-empty">暂无入账记录。结算一笔后这里会显示明细。</div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <h2>当前摘要</h2>
-        <p>打开 Popup 可看今日流水、周视图与会话恢复提示。</p>
-      </div>
-      <dl class="stats">
-        <div><dt>今日打开</dt><dd id="sVisits">0</dd></div>
-        <div><dt>至今访问</dt><dd id="sTotalVisits">0</dd></div>
-        <div><dt>今日入账</dt><dd id="sToday">¥0.00</dd></div>
-        <div><dt>累计资产</dt><dd id="sTotal">¥0.00</dd></div>
-      </dl>
     </section>
 
     <section class="card">
@@ -91,10 +87,13 @@
       <ul class="rules">
         <li>停留由页面可见性探针累计，后台标签不继续涨。</li>
         <li>会话写入本地；异常关闭后可在 Popup 补结算。</li>
-        <li>金额由停留、加载、新鲜度、页面类型加权，单次 ≤ ¥10。</li>
+        <li>基础浏览金额由停留、加载、新鲜度、页面类型加权，最高 ¥10；装备加成与地产经营收入另计。</li>
       </ul>
     </section>
+    </div>
+    <footer>慢慢探索，持续生长。<span>网页资产计 / 账本与设置</span></footer>
   </main>
+  </div>
   <script type="module" src="options.js"></script>
 </body>
 </html>

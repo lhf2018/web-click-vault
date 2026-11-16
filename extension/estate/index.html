@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>我的地产 · 网页资产计</title><link rel="stylesheet" href="../shop/shop.css"><link rel="stylesheet" href="estate.css"></head>
+<body><div class="layout">
+  <aside class="sidebar"><a class="brand" href="../popup/index.html"><span class="brand-icon">▤</span><span>网页资产计<small>你的浏览，正在积累。</small></span></a><div class="nav-label">资产实验室</div><a class="nav" href="../overview/index.html">◉ &nbsp; 资产汇总</a><a class="nav" href="../shop/index.html">◈ &nbsp; 增长商店</a><a class="nav active" href="../estate/index.html" aria-current="page">⌂ &nbsp; 我的地产</a><a class="nav" href="../company/index.html">▥ &nbsp; 我的公司</a><a class="nav" href="../achievements/index.html">✧ &nbsp; 成就</a><a class="nav" href="../options/index.html">⚙ &nbsp; 账本与设置</a><a class="nav" href="../weekly/index.html">◇ &nbsp; 每周探索任务</a><div class="sidebar-bottom"><span class="live-dot"></span> 所有积累，只在本机<br><small>这里的金额均为虚拟资产。</small></div></aside>
+  <main>
+    <header><span class="eyebrow">YOUR INTERNET ESTATE / 02</span><span class="local-tag">本地地契 · 长期经营</span></header>
+    <section class="hero"><div><p class="eyebrow">让常去的地方，成为自己的产业</p><h1>从一处小摊位，<span>长成你的互联网街区。</span></h1><p class="intro">用浏览积累的资产收购虚拟地契。<br>认真访问、慢慢经营，看着建筑一点点长大。</p></div><div class="hero-art" aria-hidden="true"><div class="orbit"></div><span class="spark">⌂</span><span class="art-label">BUILD AS YOU BROWSE</span></div></section>
+    <section class="stats" aria-label="地产概况">
+      <div class="wallet"><span>可用余额</span><strong id="balance">—</strong><small>已扣除装备与地产消费</small></div>
+      <div><span>持有地产</span><strong id="slots">—</strong><small>初始开放 3 个地产位</small></div>
+      <div><span>累计经营收入</span><strong id="income">—</strong><small>不叠加装备倍率</small></div>
+      <div><span>地产累计投入</span><strong id="spent">—</strong><small>累计收益不会因购买减少</small></div>
+    </section>
+    <p id="status" class="status" role="status" aria-live="polite">正在读取账本…</p>
+    <section class="growth-section"><div class="section-heading"><div><p class="eyebrow">YOUR NEIGHBORHOOD</p><h2>我的街区</h2></div></div><p class="section-note">可见停留满 15 秒的有效结算可经营一次，每块地产每天最多 3 次。不需要连续签到，没有离线收益。</p><div id="owned" class="products"></div></section>
+    <section class="growth-section"><div class="section-heading"><div><p class="eyebrow">DISCOVER YOUR NEXT ADDRESS</p><h2>发现可收购的网站</h2></div><span class="local-tag">每块地契 ¥500</span></div><p class="section-note">有效浏览后自动发现，保留最近 100 个网站。仅合并 www 前缀，其他子域名独立经营。地契属于本地游戏，不代表真实网站所有权。</p><div id="discoveries" class="products"></div></section>
+    <section class="info-panel"><h2>成长规则</h2><p>经营收入 = 基础浏览收益 × 地产经营系数。小摊位 20% → 店铺 35% → 工作室 50% → 大楼 75% → 总部 100%。基础收益最多按 ¥10 计算。</p><p>升级同时需要资产、累计经营次数和不同经营日期；升级进度永久保留。地产收入计入今日与累计收益，不增加浏览页数或任务进度。重置今日不会清除地产经营额度。当前版本暂不支持出售地契，请按自己的浏览习惯选择。</p></section>
+    <footer>慢慢经营，持续生长。<span>网页资产计 / 我的地产</span></footer>
+  </main>
+</div><dialog id="purchaseDialog" aria-labelledby="purchaseTitle"><h2 id="purchaseTitle">确认地产交易</h2><p id="purchaseMessage"></p><div class="dialog-actions"><button type="button" id="cancelPurchase">暂时不要</button><button type="button" id="confirmPurchase" class="buy">确认购买</button></div></dialog><script type="module" src="estate.js"></script></body></html>

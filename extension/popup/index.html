@@ -42,17 +42,17 @@
         <span class="dot">·</span>
         <span id="totalVisits">至今 0 页</span>
       </div>
-      <div class="totals-row">
-        <span class="label">累计资产</span>
-        <strong id="totalAsset">¥0.00</strong>
-      </div>
     </section>
 
-    <section class="shop" aria-labelledby="shopTitle">
-      <div class="week-head"><h2 id="shopTitle">增长商店</h2><strong id="shopMultiplier">×1 收益</strong></div>
-      <div class="shop-wallet">可用余额 <strong id="walletBalance">¥0.00</strong></div>
-      <p class="shop-note">常驻加成永久生效，装备特效按浏览条件触发。前往商店解锁装备、领取每周任务奖励。</p>
-      <button type="button" id="openShop" class="btn primary" style="margin-top:12px;width:100%">进入增长商店 ↗</button>
+    <section class="shop" aria-labelledby="overviewTitle">
+      <div class="week-head"><h2 id="overviewTitle">资产汇总</h2></div>
+      <div class="popup-assets">
+        <div><span>可用现金</span><strong id="walletBalance">¥0.00</strong></div>
+        <div><span>公司估值</span><strong id="companyValue">¥0.00</strong></div>
+        <div><span>地产估值</span><strong id="estateValue">¥0.00</strong></div>
+        <div><span>装备资产</span><strong id="equipmentValue">¥0.00</strong></div>
+      </div>
+      <button type="button" id="openOverview" class="btn primary" style="margin-top:12px;width:100%">查看资产汇总 ↗</button>
     </section>
 
     <section class="week" id="weekSection">

@@ -534,3 +534,4 @@ h1 {
 .shop-item .btn { flex-shrink: 0; padding: 9px 10px; font-size: 11px; max-width: 125px; overflow-wrap: anywhere; }
 .btn:disabled { opacity: .45; cursor: default; box-shadow: none; transform: none; }
 .btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+.popup-assets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px;margin-top:14px}.popup-assets span{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}.popup-assets strong{display:block;font-family:var(--font-display);font-size:20px;color:var(--teal);overflow-wrap:anywhere}

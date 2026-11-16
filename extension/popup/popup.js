@@ -1,4 +1,7 @@
-import { walletBalance, incomeMultiplier } from "../core/shop.js";
+document.getElementById('openOverview').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('overview/index.html') });
+});
+import { assetOverview } from "../core/overview.js";
 
 function money(n) {
   const v = Number(n) || 0;
@@ -45,10 +48,9 @@ function render(state, week) {
   document.getElementById("todayAsset").textContent = money(state.todayAsset);
   document.getElementById("todayVisits").textContent = `今日 ${state.todayVisits || 0} 次`;
   document.getElementById("totalVisits").textContent = `至今 ${state.totalVisits || 0} 页`;
-  document.getElementById("totalAsset").textContent = money(state.totalAsset);
 
   renderWeek(week || []);
-  renderShop(state);
+  renderOverview(state);
 
   const recoveries = state.pendingRecoveries || [];
   const recoverBox = document.getElementById("recoverBox");
@@ -87,7 +89,11 @@ function render(state, week) {
       const chip = document.createElement("div");
       chip.className = "chip";
       chip.style.animationDelay = `${i * 40}ms`;
-      chip.innerHTML = `<strong>+${money(entry.amount)}</strong><span>${shortHost(entry.host || entry.url)}</span>`;
+      const amount = document.createElement('strong');
+      amount.textContent = `+${money(entry.amount)}`;
+      const source = document.createElement('span');
+      source.textContent = shortHost(entry.host || entry.url);
+      chip.append(amount, source);
       trailList.appendChild(chip);
     });
   }
@@ -131,14 +137,12 @@ document.getElementById("openOptions").addEventListener("click", () => {
 });
 
 
-function renderShop(state) {
-  document.getElementById("walletBalance").textContent = money(walletBalance(state));
-  document.getElementById("shopMultiplier").textContent = `×${incomeMultiplier(state)} 常驻收益`;
+function renderOverview(state) {
+  const overview = assetOverview(state);
+  for (const [id, key] of [['walletBalance', 'cash'], ['companyValue', 'companies'], ['estateValue', 'estates'], ['equipmentValue', 'equipment']]) {
+    document.getElementById(id).textContent = money(overview[key]);
+  }
 }
-
-document.getElementById("openShop").addEventListener("click", () => {
-  chrome.tabs.create({ url: chrome.runtime.getURL("shop/index.html") });
-});
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.assetMeterState) refresh().catch(() => {});

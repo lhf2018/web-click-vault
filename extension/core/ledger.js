@@ -1,5 +1,7 @@
 import { ensureWeek, recordWeeklyVisit, WEEKLY_TASKS, taskProgress, weekKey } from "./weekly.js";
 import { depositMultiplier } from "./shop.js";
+import { recordEstateVisit } from "./estate.js";
+import { recordCompanyVisit } from './company.js';
 import {
   ACHIEVEMENTS,
   DAILY_HISTORY_DAYS,
@@ -42,6 +44,11 @@ export function defaultState() {
     shopSpent: 0,
     shopLevels: {},
     shopPurchases: [],
+    estates: [],
+    estateDiscoveries: [],
+    estateSpent: 0,
+    companies: [],
+    companySpent: 0,
     weekly: ensureWeek({}).weekly,
     recentEntries: [],
     recentVisitMap: {},
@@ -104,7 +111,7 @@ export function nextThreshold(totalAsset, unlocked) {
  */
 export function applyDeposit(state, entry, formulaDetail = null) {
   let next = ensureDayRollover(state);
-  const reward = entry.kind === "task_reward";
+  const reward = entry.kind === "task_reward" || entry.kind === "estate_income" || entry.kind === 'company_income';
   next = reward ? ensureWeek(next) : recordWeeklyVisit(next, entry);
   const baseAmount = entry.amount;
   const { multiplier, extras } = reward ? { multiplier: 1, extras: [] } : depositMultiplier(next, entry.metrics);
@@ -151,7 +158,7 @@ export function applyDeposit(state, entry, formulaDetail = null) {
     [next.dayKey]: { visits: todayVisits, asset: todayAsset },
   });
 
-  return {
+  const credited = {
     ...next,
     todayVisits,
     todayAsset,
@@ -163,6 +170,19 @@ export function applyDeposit(state, entry, formulaDetail = null) {
     unlockedAchievements: unlocked,
     pendingAchievement: pending,
   };
+  if (reward) return credited;
+  const operating = recordEstateVisit(credited, entry, baseAmount);
+  let settled = operating.income ? applyDeposit(operating.state, {
+    kind: 'estate_income', amount: operating.income, host: operating.host,
+    reason: `地产经营收入 · ${operating.host} · 不享受装备加成`,
+  }) : operating.state;
+  const business = recordCompanyVisit(settled, entry);
+  settled = business.state;
+  for (const payout of business.payouts) settled = applyDeposit(settled, {
+    kind: 'company_income', amount: payout.amount, host: payout.name,
+    reason: `公司自动交付 · ${payout.name} · ${payout.title}`,
+  });
+  return settled;
 }
 
 function round2(n) {

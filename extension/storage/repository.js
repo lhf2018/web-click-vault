@@ -1,6 +1,7 @@
 import { ensureWeek } from "../core/weekly.js";
 import { defaultState, ensureDayRollover } from "../core/ledger.js";
 import { DEFAULT_SETTINGS, SCHEMA_VERSION } from "../core/constants.js";
+import { estateHost } from '../core/estate.js';
 
 const STORAGE_KEY = "assetMeterState";
 const SESSIONS_KEY = "assetMeterSessions";
@@ -16,6 +17,12 @@ async function readState() {
     await saveState(fresh);
     return fresh;
   }
+  // Preserve the exact previous ledger once, before any additive migration/rollover.
+  if ((raw.schemaVersion || 1) < SCHEMA_VERSION) {
+    const backupKey = `assetMeterBackupBeforeSchema${SCHEMA_VERSION}`;
+    const backup = await chrome.storage.local.get(backupKey);
+    if (!backup[backupKey]) await chrome.storage.local.set({ [backupKey]: raw });
+  }
   const merged = {
     ...defaultState(),
     ...raw,
@@ -24,13 +31,16 @@ async function readState() {
     dailyHistory: raw.dailyHistory || {},
     pendingRecoveries: raw.pendingRecoveries || [],
     lastFormula: raw.lastFormula || null,
+    estateDiscoveries: raw.estateDiscoveries || [...new Map((raw.recentEntries || [])
+      .filter(entry => (!entry.kind || entry.kind === 'browse') && estateHost(entry.url))
+      .map(entry => [estateHost(entry.url), { host: estateHost(entry.url), url: new URL(entry.url).origin + '/' }])).values()].slice(0, 100),
   };
   const rolled = ensureWeek(ensureDayRollover(merged));
   if (
     rolled.dayKey !== raw.dayKey ||
     rolled.schemaVersion !== raw.schemaVersion ||
     rolled.weekly !== raw.weekly ||
-    !raw.settings
+    !raw.settings || !raw.estateDiscoveries || !raw.estates || !raw.companies
   ) {
     await saveState(rolled);
   }
@@ -80,7 +90,7 @@ export async function resetToday() {
 
 export async function resetAll() {
   return updateState(async () => {
-    await chrome.storage.local.remove([SESSIONS_KEY, "assetMeterPendingCommits"]);
+    await chrome.storage.local.remove([SESSIONS_KEY, "assetMeterPendingCommits", 'assetMeterBackupBeforeSchema5', `assetMeterBackupBeforeSchema${SCHEMA_VERSION}`]);
     return defaultState();
   });
 }

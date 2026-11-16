@@ -97,7 +97,7 @@ for (const version of [1, 2, 3]) {
       if (key === "settings") assert.deepEqual(migrated.settings, { ...value, autoSettleRecoveries: false });
       else if (key !== "schemaVersion") assert.deepEqual(migrated[key], value, key);
     }
-    assert.equal(migrated.schemaVersion, 4);
+    assert.equal(migrated.schemaVersion, 6);
     assert.equal(migrated.shopSpent, 0);
     assert.deepEqual(migrated.shopLevels, {});
     assert.equal(walletBalance(migrated), old.totalAsset);
