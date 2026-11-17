@@ -30,7 +30,7 @@ export function purchaseEstate(state, host) {
   if (walletBalance(state) < ESTATE_PRICE) throw new Error('余额不足');
   return { ...state, estateSpent: round((state.estateSpent || 0) + ESTATE_PRICE),
     estates: [...estates, { host, url: candidate.url, level: 1, purchasedAt: Date.now(),
-      visits: 0, days: 0, lastDay: '', dailyVisits: 0, income: 0 }] };
+      visits: 0, days: 0, lastDay: state.estateSaleQuotas?.[host]?.lastDay || '', dailyVisits: state.estateSaleQuotas?.[host]?.dailyVisits || 0, income: 0 }] };
 }
 
 export function upgradeEstate(state, host) {

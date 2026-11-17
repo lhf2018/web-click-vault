@@ -1,0 +1,76 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createCompany, manageCompany, nextOrder, recordCompanyVisit } from '../core/company.js';
+import { defaultState, applyDeposit } from '../core/ledger.js';
+import { walletBalance } from '../core/shop.js';
+import { assetOverview } from '../core/overview.js';
+const funded = () => createCompany({ ...defaultState(), totalAsset: 10000 }, '小刊', 'publisher');
+const visit = i => ({ url: `https://a.test/${i}`, amount: 5, metrics: { dwellMs: 60000 } });
+function ready(state) {
+  return { ...state, companies: state.companies.map(c => ({ ...c, order: { ...nextOrder(c), target: 1 } })) };
+}
+test('hiring and construction charge once, preserve current order and transfer investment to valuation', () => {
+  let s = funded(); const old = structuredClone(s.companies[0].order), id = s.companies[0].id, total = assetOverview(s).total;
+  s = manageCompany(s, id, 'staff', 'specialist');
+  assert.equal(walletBalance(s), 8800);
+  assert.deepEqual(s.companies[0].order, old);
+  assert.throws(() => manageCompany(s, id, 'staff', 'assistant'), /员工位已满/);
+  s = manageCompany(s, id, 'facility', 'studio');
+  assert.equal(walletBalance(s), 8200);
+  assert.equal(assetOverview(s).total, total);
+  assert.throws(() => manageCompany(s, id, 'facility', 'studio'), /已经建成/);
+  const order = nextOrder(s.companies[0]);
+  assert.equal(order.gross, 120); assert.equal(order.salary, 12); assert.equal(order.reward, 108); assert.equal(order.target, 4);
+  s = manageCompany(s, id, 'dismiss');
+  assert.equal(nextOrder(s.companies[0]).salary, 0);
+  assert.equal(s.companyBuildSpent, 800);
+  assert.throws(() => manageCompany(s, id, 'facility', 'bad'), /不存在/);
+  assert.throws(() => manageCompany(s, id, 'strategy', 'bad'), /不存在/);
+  assert.throws(() => manageCompany({ ...s, totalAsset: 1000 }, id, 'staff', 'assistant'), /余额不足/);
+});
+test('premium costs and assistant targets are snapshotted; ordinary delivery credits only net income', () => {
+  let s = funded(), id = s.companies[0].id;
+  s = manageCompany(s, id, 'staff', 'assistant');
+  s = manageCompany(s, id, 'facility', 'archive');
+  s = manageCompany(s, id, 'strategy', 'premium');
+  const order = nextOrder(s.companies[0]);
+  assert.equal(order.target, 4); assert.equal(order.gross, 128); assert.equal(order.cost, 10); assert.equal(order.salary, 10); assert.equal(order.reward, 108);
+  s = ready(s);
+  const before = walletBalance(s);
+  s = applyDeposit(s, visit(1));
+  assert.equal(s.companies[0].income, 108);
+  assert.equal(walletBalance(s), before + 5 + 108);
+  assert.equal(s.totalVisits, 1);
+  assert.equal(s.companies[0].history[0].salary, 10);
+});
+test('risk losses debit shared balance once, keep earned income and stop after two losses', () => {
+  let s = funded(); const id = s.companies[0].id;
+  s = manageCompany(s, id, 'strategy', 'risk');
+  s = ready(s);
+  const earned = s.totalAsset, before = walletBalance(s);
+  s = recordCompanyVisit(s, visit(1), () => .0999).state;
+  assert.equal(s.companyLosses, 20); assert.equal(walletBalance(s), before - 20); assert.equal(s.totalAsset, earned);
+  assert.equal(s.companies[0].history[0].amount, -20);
+  assert.equal(s.recentEntries[0].kind, 'company_loss');
+  assert.equal(s.companies[0].strategy, 'risk');
+  s = ready(s); s = recordCompanyVisit(s, visit(2), () => 0).state;
+  assert.equal(s.companyLosses, 40); assert.equal(s.companies[0].strategy, 'safe');
+  assert.equal(s.companies[0].order.mode, 'safe');
+});
+test('risk success boundary and insufficient funds fallback avoid debt across multiple companies', () => {
+  let s = funded();
+  s = manageCompany(s, s.companies[0].id, 'strategy', 'risk');
+  s = ready(s);
+  const success = recordCompanyVisit(s, visit(1), () => .1);
+  assert.equal(success.payouts[0].amount, 100);
+  assert.equal(success.state.companyLosses, undefined);
+  s = { ...s, totalAsset: 1020, companies: [s.companies[0], { ...s.companies[0], id: 'second', name: '第二家' }] };
+  const result = recordCompanyVisit(s, visit(2), () => 0);
+  assert.equal(result.state.companyLosses, 20);
+  assert.equal(result.payouts[0].amount, 80);
+  assert.equal(result.state.companies[1].strategy, 'safe');
+  assert.ok(walletBalance(result.state) >= 0);
+  const poor = { ...s, totalAsset: 1000 };
+  assert.throws(() => manageCompany(poor, poor.companies[0].id, 'strategy', 'risk'), /余额不足/);
+  assert.equal(nextOrder(poor.companies[0], Date.now(), 0).mode, 'safe');
+});

@@ -1,7 +1,9 @@
+import { investmentValue } from './investments.js';
+import { collectibleValue } from './collectibles.js';
 import { walletBalance } from './shop.js';
 import { companyLevel } from './company.js';
 import { ESTATE_PRICE, ESTATE_LEVELS } from './estate.js';
-import { ACHIEVEMENTS } from './constants.js';
+export { achievementOverview } from './achievements.js';
 const round = n => Math.round(n * 100) / 100;
 
 export function assetOverview(state) {
@@ -14,13 +16,8 @@ export function assetOverview(state) {
   }, 0));
   const estateValue = round((state.estates || []).reduce((sum, estate) => sum + ESTATE_PRICE +
     ESTATE_LEVELS.slice(1, estate.level).reduce((cost, level) => cost + level.price, 0), 0));
-  const cash = walletBalance(state), equipment = state.shopSpent || 0;
-  return { cash, companies: companyValue, estates: estateValue, equipment,
-    total: round(cash + companyValue + estateValue + equipment) };
-}
-
-export function achievementOverview(state) {
-  const unlocked = state.unlockedAchievements || [];
-  return ACHIEVEMENTS.map(item => ({ ...item, unlocked: unlocked.includes(item.id) || (state.totalAsset || 0) >= item.threshold,
-    progress: Math.min(1, Math.max(0, (state.totalAsset || 0) / item.threshold)) }));
+  const cash = walletBalance(state), equipment = Math.max(0, (state.shopSpent || 0) - (state.shopDisposedCost || 0));
+  const collectibles = collectibleValue(state), investments = investmentValue(state);
+  return { cash, collectibles, investments, companies: round(companyValue + (state.companyBuildSpent || 0) - (state.companyBuildDisposedCost || 0)), estates: estateValue, equipment,
+    total: round(cash + companyValue + (state.companyBuildSpent || 0) - (state.companyBuildDisposedCost || 0) + estateValue + equipment + collectibles + investments) };
 }

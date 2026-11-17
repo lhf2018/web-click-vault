@@ -1,3 +1,4 @@
+import { syncAchievements } from '../core/achievements.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { defaultState, applyDeposit } from '../core/ledger.js';
@@ -85,7 +86,7 @@ test('schema 5 migration preserves assets, estates, orders and the previous snap
   } }, action: { setBadgeText: async () => {}, setBadgeBackgroundColor: async () => {} } };
   const { loadState, updateState, resetToday, resetAll } = await import('../storage/repository.js');
   const migrated = await loadState();
-  for (const key of Object.keys(old).filter(key => key !== 'schemaVersion')) assert.deepEqual(migrated[key], old[key], key);
+  for (const key of Object.keys(old).filter(key => key !== 'schemaVersion')) assert.deepEqual(migrated[key], key === 'unlockedAchievements' ? syncAchievements(old).unlockedAchievements : old[key], key);
   assert.equal(migrated.schemaVersion, 6);
   assert.equal(migrated.companySpent, 0);
   assert.deepEqual(migrated.companies, []);

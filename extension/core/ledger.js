@@ -1,6 +1,8 @@
+import { recordAchievementVisit, syncAchievements } from './achievements.js';
 import { ensureWeek, recordWeeklyVisit, WEEKLY_TASKS, taskProgress, weekKey } from "./weekly.js";
 import { depositMultiplier } from "./shop.js";
 import { recordEstateVisit } from "./estate.js";
+import { recordCollectibleVisit } from "./collectibles.js";
 import { recordCompanyVisit } from './company.js';
 import {
   ACHIEVEMENTS,
@@ -47,6 +49,15 @@ export function defaultState() {
     estates: [],
     estateDiscoveries: [],
     estateSpent: 0,
+    collectibles: [],
+    collectibleSales: 0,
+    assetSales: 0,
+    shopDisposedCost: 0,
+    estateDisposedCost: 0,
+    companyBuildDisposedCost: 0,
+    investments: [],
+    investmentSpent: 0,
+    investmentReturned: 0,
     companies: [],
     companySpent: 0,
     weekly: ensureWeek({}).weekly,
@@ -58,6 +69,7 @@ export function defaultState() {
     settings: { ...DEFAULT_SETTINGS },
     lastFormula: null,
     pendingRecoveries: [],
+    achievementStats: { deepReads: 0, activeDays: 0, lastActiveDay: null, hosts: [] },
     unlockedAchievements: [],
     pendingAchievement: null,
   };
@@ -111,7 +123,7 @@ export function nextThreshold(totalAsset, unlocked) {
  */
 export function applyDeposit(state, entry, formulaDetail = null) {
   let next = ensureDayRollover(state);
-  const reward = entry.kind === "task_reward" || entry.kind === "estate_income" || entry.kind === 'company_income';
+  const reward = entry.kind === "task_reward" || entry.kind === "estate_income" || entry.kind === 'company_income' || entry.kind === 'investment_income' || entry.kind === 'market_income';
   next = reward ? ensureWeek(next) : recordWeeklyVisit(next, entry);
   const baseAmount = entry.amount;
   const { multiplier, extras } = reward ? { multiplier: 1, extras: [] } : depositMultiplier(next, entry.metrics);
@@ -170,7 +182,7 @@ export function applyDeposit(state, entry, formulaDetail = null) {
     unlockedAchievements: unlocked,
     pendingAchievement: pending,
   };
-  if (reward) return credited;
+  if (reward) return syncAchievements(credited);
   const operating = recordEstateVisit(credited, entry, baseAmount);
   let settled = operating.income ? applyDeposit(operating.state, {
     kind: 'estate_income', amount: operating.income, host: operating.host,
@@ -182,7 +194,7 @@ export function applyDeposit(state, entry, formulaDetail = null) {
     kind: 'company_income', amount: payout.amount, host: payout.name,
     reason: `公司自动交付 · ${payout.name} · ${payout.title}`,
   });
-  return settled;
+  return syncAchievements(recordAchievementVisit(recordCollectibleVisit(settled, entry), entry, settled.dayKey));
 }
 
 function round2(n) {

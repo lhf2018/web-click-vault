@@ -9,7 +9,7 @@ async function refresh() {
     if (!response?.ok) throw new Error(response?.error || '无法读取账本');
     if (current !== revision) return;
     const state = response.state, overview = assetOverview(state);
-    for (const key of ['total', 'cash', 'companies', 'estates', 'equipment']) $(key).textContent = money(overview[key]);
+    for (const key of ['total', 'cash', 'companies', 'estates', 'equipment', 'collectibles', 'investments']) $(key).textContent = money(overview[key]);
     $('companyCount').textContent = `持有 ${(state.companies || []).length} 家公司`;
     $('estateCount').textContent = `持有 ${(state.estates || []).length} 块地产`;
     $('status').textContent = '资产随账本实时更新，所有金额均为本地虚拟资产。';

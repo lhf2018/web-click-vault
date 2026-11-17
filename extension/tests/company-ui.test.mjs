@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
-import { COMPANY_TYPES, companyPrice, companyLevel, companyType, createCompany } from '../core/company.js';
+import { COMPANY_TYPES, companyPrice, companyLevel, companyType, createCompany, manageCompany, COMPANY_STAFF, COMPANY_FACILITIES } from '../core/company.js';
 import { walletBalance } from '../core/shop.js';
 import { defaultState } from '../core/ledger.js';
 const source = (await readFile(new URL('../company/company.js', import.meta.url), 'utf8')).replace(/^import .*;\r?\n/gm, '');
@@ -14,14 +14,38 @@ function setup(sendMessage) {
     addEventListener(event, fn) { this[event] = fn; }, setAttribute() {}, focus() { this.focused = true; } }; }
   const get = id => { if (!nodes.has(id)) nodes.set(id, node()); return nodes.get(id); };
   get('companyType').value = 'publisher'; get('status').textContent = '正在读取账本…';
-  vm.runInNewContext(source, { COMPANY_TYPES, companyPrice, companyLevel, companyType, walletBalance,
+  vm.runInNewContext(source, { COMPANY_TYPES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_FACILITIES, walletBalance,
     document: { getElementById: get, createElement: node }, Option: function(text, value) { return { text, value }; },
     chrome: { runtime: { sendMessage }, storage: { onChanged: { addListener() {} } } },
-    window: { addEventListener() {} }, setTimeout, clearTimeout });
+    window: { addEventListener() {}, confirm: () => true }, setTimeout, clearTimeout });
   return { get, submit: () => get('createForm').submit({ preventDefault() {} }) };
 }
 const funded = () => ({ ...defaultState(), totalAsset: 10000 });
 const response = state => ({ ok: true, state, features: { companies: true } });
+
+test('management buttons hire staff, build facilities and opt into risk without rewriting current order', async () => {
+  let state = createCompany(funded(), '建设测试', 'publisher');
+  const originalOrder = structuredClone(state.companies[0].order);
+  const ui = setup(async message => {
+    if (message.type === 'MANAGE_COMPANY') state = manageCompany(state, message.id, message.action, message.value);
+    return { ok: true, state, features: { companies: true, companyManagement: true } };
+  });
+  await flush();
+  function find(text) {
+    const walk = n => n.textContent === text ? n : (n.children || []).map(walk).find(Boolean);
+    return walk(ui.get('companies'));
+  }
+  const recruit = find('招聘编辑 · ¥200.00');
+  assert.equal(recruit.disabled, false);
+  await recruit.click();
+  assert.equal(state.companies[0].staff, 'specialist');
+  await find('专业工作台 · ¥600.00').click();
+  assert.deepEqual(state.companies[0].facilities, ['studio']);
+  await find('风险订单').click();
+  assert.equal(state.companies[0].strategy, 'risk');
+  assert.deepEqual(state.companies[0].order, originalOrder);
+  assert.equal(state.companyBuildSpent, 800);
+});
 
 test('old background is identified beside the create button before spending', async () => {
   const messages = [];

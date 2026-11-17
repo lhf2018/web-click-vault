@@ -2,3 +2,23 @@
 
 .growth-section{margin:30px 0}.section-note{font-size:11px;color:var(--muted);line-height:1.9;max-width:90ch}.roadmap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.unlock-step{padding:13px;border:1px dashed var(--line);border-radius:8px;background:#f0f1e9}.unlock-step.unlocked{border-style:solid;background:#e6eddf}.unlock-step strong{font-size:11px}.unlock-step small{display:block;color:var(--muted);font-size:9px;line-height:1.7;margin:5px 0}progress{width:100%;height:6px;accent-color:var(--green)}.weekly-tasks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.task-card{padding:18px;border:1px solid var(--line);border-radius:12px;background:#fffefa;display:flex;flex-direction:column;gap:10px}.task-top{display:flex;justify-content:space-between;align-items:center;gap:8px}.task-top h3{font-size:14px;margin:0}.task-top strong{font:17px Georgia,serif;color:var(--gold)}.task-card p{font-size:11px;color:var(--muted);line-height:1.8;flex:1;margin:0}.task-card small{font-size:10px;color:var(--muted)}.task-card .buy{justify-content:center}.special-effect{font-size:10px;line-height:1.8;color:var(--gold);min-height:36px;margin:0 0 6px}.scenario-label{display:block;font-size:11px;color:var(--muted);margin-top:16px}.scenario-label select{margin-left:8px;max-width:100%}.shortfall{line-height:1.7;min-height:30px}@media(max-width:1100px){.weekly-tasks{grid-template-columns:1fr}.roadmap{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.roadmap{grid-template-columns:1fr}.scenario-label select{display:block;margin:8px 0 0}}
 .shop-stats{grid-template-columns:1.35fr 1fr 1fr}@media(max-width:1100px){.shop-stats{grid-template-columns:1fr}.shop-stats>div{border-right:0;border-bottom:1px solid var(--line)}.shop-stats>div:last-child{border-bottom:0}}
+/* Completed equipment: an emerald and brushed-gold display case. */
+.product.is-maxed{border-color:#b7a474;background:linear-gradient(155deg,#fffef8,#f4f1e5);box-shadow:0 3px 16px #89723c12}
+.product.is-maxed:hover{box-shadow:0 10px 28px #89723c24}
+.product.is-maxed .product-art{height:154px;background:radial-gradient(ellipse at 50% 65%,#456954 0%,#284d3e 48%,#193c30 100%);color:#eed8a0;isolation:isolate;border-bottom:1px solid #c4ad73}
+.product.is-maxed .product-art:before{content:"";position:absolute;width:94px;height:94px;box-sizing:border-box;border:1px solid #d9be7b80;border-radius:50%;box-shadow:0 0 0 7px #d9be7b0a,0 0 0 8px #d9be7b25;z-index:-1}
+.product.is-maxed .symbol{font-size:56px;text-shadow:0 2px 12px #ebce8d35;transform:translateY(9px)}
+.masterwork-label{position:absolute;left:14px;top:14px;font-size:8px;letter-spacing:1.5px;color:#dfc995}
+.masterwork-seal{position:absolute;bottom:12px;right:17px;font-size:23px;color:#dfc995}
+.product.is-maxed .product-level{top:auto;bottom:10px;left:14px;right:auto;border-color:#c8b27a55;background:#142f2660;color:#f1dfb7;font-size:9px;letter-spacing:.5px}
+.product.is-maxed .category-label{color:#8d713b}
+.product.is-maxed .effect{border-top-color:#ded4b9}
+.product.is-maxed .effect strong{color:#8b682a;font-size:23px}
+.product.is-maxed .level-track{height:5px;background:#e8dfca}
+.product.is-maxed .level-track span{background:linear-gradient(90deg,#9c7c3b,#dfc486,#ae8a43)}
+.product.is-maxed .progress-label{color:#806b3d}
+.product.is-maxed .buy:disabled{background:linear-gradient(110deg,#254e3c,#35634c);color:#f4e4b9;border:1px solid #b79c5b;box-shadow:inset 0 1px 0 #ffffff18;letter-spacing:.5px}
+.product.is-maxed .buy strong{display:grid;place-items:center;width:22px;height:22px;border:1px solid #d9c38b70;border-radius:50%;font:13px "Segoe UI",sans-serif}
+.product.is-maxed .shortfall{color:#8c7951}
+@media(max-width:700px){.product.is-maxed .product-art{height:142px}.masterwork-label{font-size:7px;letter-spacing:.6px;left:10px}.product.is-maxed .product-level{left:10px;font-size:8px}}
+.sidebar{overflow-y:auto;scrollbar-width:thin}.sidebar-bottom{padding-top:20px}@media(max-width:700px){.sidebar{overflow:visible}}

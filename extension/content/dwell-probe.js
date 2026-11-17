@@ -1,6 +1,6 @@
 /**
  * Visible-dwell probe. Only counts time while document is visible.
- * Sends ticks to the service worker; does not read page content.
+ * Sends ticks to the service worker; reads only bounded title/theme metadata and code-block presence for passive souvenirs.
  */
 (() => {
   if (window.__assetMeterProbeInstalled) return;
@@ -25,6 +25,12 @@
     try {
       chrome.runtime.sendMessage({
         type,
+        pageElements: {
+          title: document.title.slice(0, 120),
+          siteName: (document.querySelector('meta[property="og:site_name"]')?.content || '').slice(0, 50),
+          color: (document.querySelector('meta[name="theme-color"]')?.content || '').slice(0, 32),
+          hasCode: !!document.querySelector('pre code, pre[class*="language"], pre[class*="highlight"]'),
+        },
         dwellMs: currentDwell(),
         visible: document.visibilityState === "visible",
         ...extra,

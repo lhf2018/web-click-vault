@@ -8,7 +8,7 @@ import { purchaseEstate, upgradeEstate } from '../core/estate.js';
 test('overview supports legacy balances without rewriting or manufacturing assets', () => {
   const old = { totalAsset: 1234.56, shopSpent: 50, unlockedAchievements: ['start_ledger'] };
   const before = structuredClone(old);
-  assert.deepEqual(assetOverview(old), { cash: 1184.56, companies: 0, estates: 0, equipment: 50, total: 1234.56 });
+  assert.deepEqual(assetOverview(old), { cash: 1184.56, collectibles: 0, investments: 0, companies: 0, estates: 0, equipment: 50, total: 1234.56 });
   assert.deepEqual(old, before);
   assert.equal(achievementOverview(old)[0].unlocked, true);
   assert.equal(achievementOverview(old)[1].unlocked, true);

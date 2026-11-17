@@ -1,3 +1,4 @@
+import { syncAchievements } from '../core/achievements.js';
 import test from "node:test";
 import assert from "node:assert/strict";
 import { SHOP_ITEMS, purchaseUpgrade, walletBalance, incomeMultiplier, itemPrice } from "../core/shop.js";
@@ -95,7 +96,7 @@ for (const version of [1, 2, 3]) {
     const migrated = await loadState();
     for (const [key, value] of Object.entries(old)) {
       if (key === "settings") assert.deepEqual(migrated.settings, { ...value, autoSettleRecoveries: false });
-      else if (key !== "schemaVersion") assert.deepEqual(migrated[key], value, key);
+      else if (key !== "schemaVersion") assert.deepEqual(migrated[key], key === 'unlockedAchievements' ? syncAchievements(old).unlockedAchievements : value, key);
     }
     assert.equal(migrated.schemaVersion, 6);
     assert.equal(migrated.shopSpent, 0);

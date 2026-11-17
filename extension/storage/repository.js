@@ -1,3 +1,4 @@
+import { syncAchievements } from '../core/achievements.js';
 import { ensureWeek } from "../core/weekly.js";
 import { defaultState, ensureDayRollover } from "../core/ledger.js";
 import { DEFAULT_SETTINGS, SCHEMA_VERSION } from "../core/constants.js";
@@ -35,12 +36,13 @@ async function readState() {
       .filter(entry => (!entry.kind || entry.kind === 'browse') && estateHost(entry.url))
       .map(entry => [estateHost(entry.url), { host: estateHost(entry.url), url: new URL(entry.url).origin + '/' }])).values()].slice(0, 100),
   };
-  const rolled = ensureWeek(ensureDayRollover(merged));
+  const rolled = syncAchievements(ensureWeek(ensureDayRollover(merged)));
   if (
+    rolled.unlockedAchievements.length !== (raw.unlockedAchievements || []).length || !raw.achievementStats ||
     rolled.dayKey !== raw.dayKey ||
     rolled.schemaVersion !== raw.schemaVersion ||
     rolled.weekly !== raw.weekly ||
-    !raw.settings || !raw.estateDiscoveries || !raw.estates || !raw.companies
+    !raw.settings || !raw.estateDiscoveries || !raw.estates || !raw.companies || !raw.collectibles || !raw.investments
   ) {
     await saveState(rolled);
   }
@@ -66,7 +68,7 @@ export function loadState() {
 export function updateState(mutator) {
   const operation = stateQueue.then(async () => {
     const current = await readState();
-    const next = await mutator(current);
+    const next = syncAchievements(await mutator(current));
     await saveState(next);
     return next;
   });

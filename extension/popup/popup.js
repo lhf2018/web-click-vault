@@ -64,7 +64,7 @@ function render(state, week) {
 
   const last = state.recentEntries?.[0];
   if (last) {
-    document.getElementById("lastAmount").textContent = `+${money(last.amount)}`;
+    document.getElementById("lastAmount").textContent = `${last.amount < 0 ? '−' : '+'}${money(Math.abs(last.amount))}`;
     document.getElementById("lastReason").textContent = last.reason || "";
     document.getElementById("lastHost").textContent = shortHost(last.host || last.url);
   } else {
@@ -90,7 +90,7 @@ function render(state, week) {
       chip.className = "chip";
       chip.style.animationDelay = `${i * 40}ms`;
       const amount = document.createElement('strong');
-      amount.textContent = `+${money(entry.amount)}`;
+      amount.textContent = `${entry.amount < 0 ? '−' : '+'}${money(Math.abs(entry.amount))}`;
       const source = document.createElement('span');
       source.textContent = shortHost(entry.host || entry.url);
       chip.append(amount, source);
@@ -139,7 +139,7 @@ document.getElementById("openOptions").addEventListener("click", () => {
 
 function renderOverview(state) {
   const overview = assetOverview(state);
-  for (const [id, key] of [['walletBalance', 'cash'], ['companyValue', 'companies'], ['estateValue', 'estates'], ['equipmentValue', 'equipment']]) {
+  for (const [id, key] of [['walletBalance', 'cash'], ['companyValue', 'companies'], ['estateValue', 'estates'], ['equipmentValue', 'equipment'], ['collectibleValue', 'collectibles'], ['investmentValue', 'investments']]) {
     document.getElementById(id).textContent = money(overview[key]);
   }
 }

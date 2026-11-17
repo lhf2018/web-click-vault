@@ -68,15 +68,15 @@ function renderProducts() {
     const previewState = {...state,shopLevels:{...state.shopLevels,[item.id]:Math.min(item.maxLevel,level+1)}};
     const nextMultiplier = depositMultiplier(previewState,metrics).multiplier;
     const row = document.createElement('article');
-    row.className = 'product';
+    row.className = maxed ? 'product is-maxed' : 'product';
     row.dataset.category = item.category;
-    row.innerHTML = `<div class="product-art"><span class="symbol" aria-hidden="true">${item.symbol}</span><span class="product-level">${!unlocked.unlocked ? '待解锁' : level ? '已拥有' : '已解锁'} · Lv.${level}</span></div>
+    row.innerHTML = `<div class="product-art">${maxed ? '<span class="masterwork-label">MASTERWORK / 圆满之作</span><span class="masterwork-seal" aria-hidden="true">✧</span>' : ''}<span class="symbol" aria-hidden="true">${item.symbol}</span><span class="product-level">${maxed ? '满级典藏' : !unlocked.unlocked ? '待解锁' : level ? '已拥有' : '已解锁'} · Lv.${level}</span></div>
       <div class="product-body"><span class="category-label">${SHOP_CATEGORIES.find(c=>c.id===item.category).name}</span><h3>${item.name}</h3><p class="description">${item.description}</p>
-      <div class="effect"><span>每级常驻加成</span><strong>+${Math.round(item.bonus*100)}%</strong></div>
+      <div class="effect"><span>${maxed ? '满级常驻加成' : '每级常驻加成'}</span><strong>+${Math.round((maxed ? level : 1)*item.bonus*100)}%</strong></div>
       <p class="special-effect">${item.label || "全场景常驻加成，稳定提升每次入账"}</p>
-      <p class="preview">${maxed ? `已贡献 +${Math.round(level*item.bonus*100)}% 浏览收益` : `购买后总倍率 ×${multiplier} → ×${nextMultiplier}<br>基础 ¥10 的入账：${money(10*multiplier)} → ${money(10*nextMultiplier)}`}</p>
+      <p class="preview">${maxed ? '每一级投入，都已化作持续生效的力量。' : `购买后总倍率 ×${multiplier} → ×${nextMultiplier}<br>基础 ¥10 的入账：${money(10*multiplier)} → ${money(10*nextMultiplier)}`}</p>
       <div class="level-track" role="progressbar" aria-label="${item.name}升级进度" aria-valuenow="${level}" aria-valuemin="0" aria-valuemax="${item.maxLevel}"><span style="width:${level/item.maxLevel*100}%"></span></div>
-      <p class="progress-label">等级 ${level} / ${item.maxLevel} · 已贡献 +${Math.round(level*item.bonus*100)}%</p></div>`;
+      <p class="progress-label">${maxed ? `全部 ${item.maxLevel} 级已点亮 · 永久生效` : `等级 ${level} / ${item.maxLevel} · 已贡献 +${Math.round(level*item.bonus*100)}%`}</p></div>`;
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'buy';

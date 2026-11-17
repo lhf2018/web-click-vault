@@ -62,7 +62,15 @@ export function itemPrice(item, level) {
 }
 
 export function walletBalance(state) {
-  return Math.max(0, Math.round(((state.totalAsset || 0) - (state.shopSpent || 0) - (state.estateSpent || 0) - (state.companySpent || 0)) * 100) / 100);
+  return Math.max(0, Math.round(((state.totalAsset || 0) + (state.collectibleSales || 0) + (state.assetSales || 0) + (state.investmentReturned || 0) - (state.investmentSpent || 0) - (state.shopSpent || 0) - (state.estateSpent || 0) - (state.companySpent || 0) - (state.companyBuildSpent || 0) - (state.companyLosses || 0)) * 100) / 100);
+}
+
+export function equipmentBasis(state) {
+  if (state.equipmentBasis) return { ...state.equipmentBasis };
+  const costs = SHOP_ITEMS.map(item => [item.id, Array.from({ length: itemLevel(state, item) }, (_, level) => itemPrice(item, level)).reduce((sum, price) => sum + price, 0)]);
+  const total = costs.reduce((sum, [, cost]) => sum + cost, 0);
+  const remaining = Math.max(0, (state.shopSpent || 0) - (state.shopDisposedCost || 0));
+  return Object.fromEntries(costs.map(([id, cost]) => [id, total ? Math.floor(cost / total * remaining * 100) / 100 : 0]));
 }
 
 export function incomeMultiplier(state) {
@@ -81,6 +89,7 @@ export function purchaseUpgrade(state, itemId) {
     ...state,
     shopSpent: Math.round(((state.shopSpent || 0) + price) * 100) / 100,
     shopLevels: { ...(state.shopLevels || {}), [item.id]: level + 1 },
+    equipmentBasis: { ...equipmentBasis(state), [item.id]: Math.round(((equipmentBasis(state)[item.id] || 0) + price) * 100) / 100 },
     shopPurchases: [{ itemId: item.id, level: level + 1, price, ts: Date.now() }, ...(state.shopPurchases || [])].slice(0, 30),
   };
 }

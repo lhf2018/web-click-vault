@@ -1,0 +1,77 @@
+// Passive souvenirs. No remote resources are loaded by the collection wall.
+export const COLLECTION_LIMIT = 600;
+export const COLLECTION_DROP_RATE = 0.03;
+export const COLLECTION_DWELL_MS = 30000;
+export const COLLECTION_TYPES = {
+  badge: { name: '网站徽章', symbol: '◈', value: 10, rarity: '普通' },
+  bookmark: { name: '阅读书签', symbol: '▤', value: 20, rarity: '精致' },
+  chip: { name: '代码芯片', symbol: '⌘', value: 30, rarity: '稀有' },
+};
+// Browsing progress is permanent: spending or selling cannot lower this level.
+export function explorationLevel(state) {
+  const visits = Number(state.totalVisits);
+  return 1 + Math.min(9, Math.floor(Math.max(0, Number.isFinite(visits) ? visits : 0) / 100));
+}
+export function collectiblePrice(type, level, qualityPercent = 0) {
+  const safeLevel = Math.max(1, Math.min(10, Math.floor(Number(level) || 1)));
+  const t = safeLevel - 1;
+  const quality = Math.max(-15, Math.min(15, Number(qualityPercent) || 0));
+  // Smooth growth through the agreed Lv.1 / Lv.5 / Lv.10 price anchors.
+  return Math.round(COLLECTION_TYPES[type].value * (1 + (13 * t + 8 * t * t) / 45) * (1 + quality / 100) * 100) / 100;
+}
+export function cleanPageElements(raw = {}) {
+  if (!raw || typeof raw !== 'object') raw = {};
+  return { title: typeof raw.title === 'string' ? raw.title.replace(/[\u0000-\u001f]/g, '').slice(0, 120) : '',
+    siteName: typeof raw.siteName === 'string' ? raw.siteName.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 50) : '',
+    color: /^#[0-9a-f]{6}$/i.test(raw.color) ? raw.color : '', hasCode: raw.hasCode === true };
+}
+function hash(text) { let n = 0; for (const c of text) n = (n * 31 + c.charCodeAt(0)) >>> 0; return n; }
+export function collectibleIdentity(item) {
+  const site = item.siteName || item.host || '未知网站';
+  const key = item.speciesKey || `${item.host}:${item.source || item.title}:${item.type}`;
+  const fingerprint = hash(key);
+  const finishes = ['星轨', '回声', '棱光', '年轮', '流沙', '远航', '晨雾', '微光'];
+  const form = item.type === 'chip' ? '电路芯片' : item.type === 'bookmark' ? '阅读书签' : '纪念徽章';
+  return { series: `${site} · 站点藏系`, name: item.collectibleName || item.title || `${site} · ${form}`,
+    edition: fingerprint.toString(36).toUpperCase().padStart(7, '0'), motif: fingerprint % 6,
+    finish: finishes[fingerprint % finishes.length], mark: (item.siteName || item.host || '?').slice(0, 1).toUpperCase() };
+}
+export function recordCollectibleVisit(state, entry, random = Math.random) {
+  if ((entry.kind && entry.kind !== 'browse') || (entry.metrics?.dwellMs || 0) < COLLECTION_DWELL_MS) return state;
+  let url;
+  try { url = new URL(entry.url); if (!/^https?:$/.test(url.protocol)) return state; } catch { return state; }
+  const items = state.collectibles || [];
+  if (items.length >= COLLECTION_LIMIT) return state;
+  const host = url.hostname.replace(/^www\./, '');
+  const source = url.origin + url.pathname;
+  const today = items.filter(item => item.day === state.dayKey);
+  if (today.length >= 3 || today.some(item => item.host === host) || items.some(item => item.source === source)) return state;
+  if (random() >= COLLECTION_DROP_RATE) return state;
+  const page = cleanPageElements(entry.pageElements);
+  const type = page.hasCode ? 'chip' : entry.metrics.dwellMs >= 60000 ? 'bookmark' : 'badge';
+  const foundLevel = explorationLevel(state);
+  const qualityPercent = Math.min(15, Math.max(-15, Math.floor(random() * 31) - 15));
+  const speciesKey = `${host}${url.pathname}:${type}`;
+  const siteName = page.siteName || host;
+  const signature = hash(speciesKey);
+  const tones = ['#39785c', '#956aab', '#ad723e', '#477d9c', '#9b546c', '#697c47', '#7165a0', '#408d8d'];
+  const forms = type === 'chip' ? ['逻辑晶片', '星光电路', '开源核心', '数据刻片'] : type === 'bookmark' ? ['纸间回声', '阅读残页', '文字书签', '记忆票签'] : ['探索徽章', '站点印章', '漫游纪念章', '路径纹章'];
+  const item = { id: globalThis.crypto.randomUUID(), type, title: page.title || host, host, source,
+    speciesKey, siteName, collectibleName: `${siteName} · ${page.title ? page.title.slice(0, 36) + ' · ' : ''}${forms[signature % forms.length]}`,
+    color: page.color || tones[hash(host) % tones.length],
+    value: collectiblePrice(type, foundLevel, qualityPercent), foundLevel, qualityPercent, day: state.dayKey, foundAt: Date.now(), soldAt: null };
+  return { ...state, collectibles: [item, ...items] };
+}
+export function collectibleValue(state) {
+  return Math.round((state.collectibles || []).reduce((sum, item) => sum + (item.soldAt == null ? item.value : 0), 0) * 100) / 100;
+}
+export function sellCollectible(state, id) {
+  const item = (state.collectibles || []).find(item => item.id === id);
+  if (!item || item.soldAt != null) throw new Error('藏品不存在或已经出售');
+  const ts = Date.now();
+  return { ...state, collectibleSales: Math.round(((state.collectibleSales || 0) + item.value) * 100) / 100,
+    collectibles: state.collectibles.map(row => row.id === id ? { ...row, soldAt: ts } : row),
+    recentEntries: [{ id: globalThis.crypto.randomUUID(), kind: 'collectible_sale', ts,
+      host: item.host, amount: item.value, reason: `藏品出售 · ${COLLECTION_TYPES[item.type].name} · 资产转为现金，不计浏览收益` },
+      ...(state.recentEntries || [])].slice(0, 50) };
+}

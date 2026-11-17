@@ -1,3 +1,4 @@
+import { syncAchievements } from '../core/achievements.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { defaultState, applyDeposit, ensureDayRollover } from '../core/ledger.js';
@@ -104,7 +105,7 @@ test('schemas 1–4 preserve every existing field, snapshot and sessions across 
       set: async patch => { stored = { ...stored, ...structuredClone(patch) }; },
     } } };
     const migrated = await loadState();
-    for (const key of Object.keys(old).filter(k => k !== 'schemaVersion')) assert.deepEqual(migrated[key], old[key], key);
+    for (const key of Object.keys(old).filter(k => k !== 'schemaVersion')) assert.deepEqual(migrated[key], key === 'unlockedAchievements' ? syncAchievements(old).unlockedAchievements : old[key], key);
     assert.equal(migrated.schemaVersion, 6);
     assert.equal(walletBalance(migrated), 12095.67);
     assert.deepEqual(migrated.estates, []);

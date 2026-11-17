@@ -1,6 +1,10 @@
+import { sellAtMarket } from '../core/market.js';
+import { sellAsset, tradeAsset } from '../core/exchange.js';
+import { investProject, exitProject } from '../core/investments.js';
+import { sellCollectible } from "../core/collectibles.js";
 import { purchaseUpgrade } from "../core/shop.js";
 import { purchaseEstate, upgradeEstate } from "../core/estate.js";
-import { createCompany } from '../core/company.js';
+import { createCompany, manageCompany } from '../core/company.js';
 import {
   applyDwellFromProbe,
   discardRecoveries,
@@ -87,7 +91,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message?.type === "DWELL_TICK" || message?.type === "DWELL_VISIBLE") {
         const tabId = sender.tab?.id;
         if (tabId != null) {
-          await applyDwellFromProbe(tabId, message.dwellMs || 0, message.visible !== false);
+          await applyDwellFromProbe(tabId, message.dwellMs || 0, message.visible !== false, message.pageElements, sender.url);
         }
         sendResponse({ ok: true });
         return;
@@ -104,9 +108,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ ok: true, state, week: buildWeekSeries(state, 7) });
         return;
       }
+      if (message?.type === 'MANAGE_COMPANY') {
+        const state = await updateState(current => manageCompany(current, message.id, message.action, message.value));
+        sendResponse({ ok: true, state }); return;
+      }
       if (message?.type === 'CREATE_COMPANY') {
         const state = await updateState(current => createCompany(current, message.name, message.companyType, message.headquarters));
         sendResponse({ ok: true, state, week: buildWeekSeries(state, 7) });
+        return;
+      }
+      if (['MARKET_SELL', 'SELL_ASSET', 'TRADE_ASSET', 'INVEST_PROJECT', 'EXIT_PROJECT'].includes(message?.type)) {
+        if (sender.url && !sender.url.startsWith(chrome.runtime.getURL(''))) throw new Error('请从扩展资产页面操作');
+        const state = await updateState(current => {
+          if (message.type === 'MARKET_SELL') return sellAtMarket(current, message.id, message.mode, message.week, message.price);
+          if (message.type === 'SELL_ASSET') return sellAsset(current, message.kind, message.id, message.price);
+          if (message.type === 'TRADE_ASSET') return tradeAsset(current, message.kind, message.id, message.target, message.price);
+          if (message.type === 'INVEST_PROJECT') return investProject(current, message.projectId, message.units ?? NaN);
+          return exitProject(current, message.id, message.units ?? null);
+        });
+        sendResponse({ ok: true, state }); return;
+      }
+      if (message?.type === 'SELL_COLLECTIBLE') {
+        if (sender.tab && !sender.url?.startsWith(chrome.runtime.getURL(''))) throw new Error('请从收藏品页面出售');
+        const state = await updateState(current => sellAtMarket(current, message.id, 'market', message.week, message.price));
+        sendResponse({ ok: true, state });
         return;
       }
       if (message?.type === "BUY_UPGRADE") {
@@ -118,7 +143,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const state = await loadState();
         const week = buildWeekSeries(state, 7);
         const activeSession = await getActiveSessionSnapshot();
-        sendResponse({ ok: true, state, week, activeSession, features: { companies: true } });
+        sendResponse({ ok: true, state, week, activeSession, features: { companies: true, companyManagement: true } });
         return;
       }
       if (message?.type === "DISMISS_ACHIEVEMENT") {

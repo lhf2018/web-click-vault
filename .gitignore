@@ -9,6 +9,7 @@ Desktop.ini
 
 # Logs / local
 *.log
+output/
 .env
 .env.*
 

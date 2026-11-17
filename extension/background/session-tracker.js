@@ -1,3 +1,5 @@
+import { cleanPageElements } from "../core/collectibles.js";
+import { canonicalizeUrl } from "../core/url.js";
 import { DWELL_CAP_MS, WEIGHTS } from "../core/constants.js";
 import { computeDeposit, formatDwell } from "../core/formula.js";
 import { applyDeposit } from "../core/ledger.js";
@@ -69,7 +71,7 @@ function flushVisible(session, now = Date.now()) {
  * @param {number} dwellMs
  * @param {boolean} [visible]
  */
-export async function applyDwellFromProbe(tabId, dwellMs, visible = true) {
+export async function applyDwellFromProbe(tabId, dwellMs, visible = true, pageElements = null, pageUrl = null) {
   const sessions = await loadSessions();
   const key = String(tabId);
   const session = sessions[key];
@@ -79,6 +81,7 @@ export async function applyDwellFromProbe(tabId, dwellMs, visible = true) {
   sessions[key] = {
     ...session,
     dwellAccumMs: Math.max(session.dwellAccumMs || 0, capped),
+    pageElements: pageElements && canonicalizeUrl(pageUrl) === session.url ? cleanPageElements(pageElements) : session.pageElements,
     dwellSource: "probe",
     // Keep tab timer off when probe owns dwell.
     visibleSince: visible ? session.visibleSince || Date.now() : null,
@@ -116,6 +119,7 @@ export async function beginSession(tabId, url, committedAt) {
   const session = {
     tabId,
     url: gate.canonical,
+    pageElements: null,
     startedAt: now,
     committedAt: commitTs || now,
     loadMs,
@@ -255,6 +259,7 @@ export async function settleSessionData(session, opts = {}) {
       state,
       {
         url: gate.canonical,
+        pageElements: flushed.pageElements,
         host,
         amount: deposit.deposit,
         score: deposit.score,

@@ -61,7 +61,7 @@ async function transact(type, host) {
   const estate = (state.estates || []).find(row => row.host === host);
   const price = type === 'BUY_ESTATE' ? ESTATE_PRICE : ESTATE_LEVELS[estate?.level]?.price;
   confirming = true;
-  const accepted = await confirmPurchase(type === 'BUY_ESTATE' ? `花费 ${money(price)} 收购 ${host}？最多持有 3 块地产，当前暂不支持出售。` : `花费 ${money(price)} 升级 ${host}？费用将从可用余额扣除。`);
+  const accepted = await confirmPurchase(type === 'BUY_ESTATE' ? `花费 ${money(price)} 收购 ${host}？最多持有 3 块地产，可到资产置换页按折价出售。` : `花费 ${money(price)} 升级 ${host}？费用将从可用余额扣除。`);
   confirming = false;
   if (!accepted) return;
   busy = true; ++revision; render();

@@ -471,12 +471,16 @@
             <div class="fact"><span>存储</span><strong>chrome.storage</strong></div>
             <div class="fact"><span>原则</span><strong>本地优先</strong></div>
           </div>
-          <p class="sidebar-note">对齐 PRD v0.3：单次入账 ≤ ¥10，Score 由停留 / 加载 / 新鲜度 / 类型加权。</p>
+          <p class="sidebar-note">当前实现 0.9.0 / schema 6，2026-11-18 更新。基础入账上限 ¥10，装备加成另算；早期技术草案保留为存档。</p>
         </div>
 
         <div class="sidebar-block">
           <nav class="toc" aria-label="目录">
-            <a href="#overview" aria-current="true"><span class="toc-num">01</span>目标与范围</a>
+            <a href="#current-runtime" aria-current="true"><span class="toc-num">新</span>当前实现与模块</a>
+            <a href="#current-trading"><span class="toc-num">新</span>行情与份额记账</a>
+            <a href="#current-persistence"><span class="toc-num">新</span>成就、兼容与验证</a>
+            <a href="#historical-design"><span class="toc-num">档</span>早期方案存档</a>
+            <a href="#overview"><span class="toc-num">01</span>早期目标与范围</a>
             <a href="#arch"><span class="toc-num">02</span>整体架构</a>
             <a href="#pipeline"><span class="toc-num">03</span>入账流水线</a>
             <a href="#formula"><span class="toc-num">04</span>公式引擎</a>
@@ -491,11 +495,56 @@
 
         <div class="sidebar-block">
           <div class="pill-note">可本地打开 · 对接 PRD</div>
-          <p class="footer-note">首发只做扩展 MVP：采样、结算、账本、成就提示。不接支付与云同步。</p>
+          <p class="footer-note">本地扩展已包含经营、收藏、份额投资和永久成就；不接支付与云同步。</p>
         </div>
       </aside>
 
       <main class="main">
+        <section id="current-runtime" class="section">
+          <div class="eyebrow">Implemented Architecture · 0.9.0 / schema 6 · 2026-11-18</div>
+          <h1>网页资产计 · 当前技术实现</h1>
+          <p>使用 Chrome Manifest V3、原生 JavaScript 模块、HTML 和 CSS，无构建依赖。当前实现以 <code>extension/</code> 为准；下方折叠区是早期技术草案，包含尚未采用的 TypeScript 路径和历史范围，不作为当前接口说明。</p>
+          <table><thead><tr><th>模块</th><th>职责</th></tr></thead><tbody>
+            <tr><td><code>background/service-worker.js</code></td><td>导航、会话、恢复及消息编排；校验扩展页面交易来源。</td></tr>
+            <tr><td><code>content/dwell-probe.js</code></td><td>可见停留计时、受限网页标题／站点名／主题色与代码块存在标记。</td></tr>
+            <tr><td><code>core/ledger.js</code></td><td>浏览、任务与经营入账，独立奖励不推进浏览或重复触发装备加成。</td></tr>
+            <tr><td><code>core/market-pricing.js</code>、<code>market.js</code></td><td>独立每周藏品行情、单件需求、报价校验与收购额度。</td></tr>
+            <tr><td><code>core/investments.js</code></td><td>项目池、三周上新、小时行情、份额买卖与成本核算。</td></tr>
+            <tr><td><code>core/achievements.js</code></td><td>54 个成就、浏览统计、进度与永久解锁同步。</td></tr>
+            <tr><td><code>storage/repository.js</code></td><td>增量兼容、迁移快照、串行读写与成就持久化。</td></tr>
+          </tbody></table>
+          <p>收藏品行情合并到 <code>collection/</code>；<code>market/index.html</code> 仅作旧入口跳转。<code>finance/finance.js</code> 为投资和置换提供共用界面，交易通过后台重新校验。其他经营、任务与装备模块按各自职责保留。</p>
+        </section>
+        <section id="current-trading" class="section">
+          <h2>独立行情与份额记账</h2>
+          <p><code>investmentCatalog(now)</code> 返回 20 个常驻与 4 个当期项目。按 2026-01-05 UTC 起的 21 天周期生成独立项目 ID；历史项目仍可由 <code>investmentSpec(id)</code> 解析，持仓跨期或离线后仍可估值、卖出，新买入与加仓必须在开放期内。</p>
+          <p><code>investmentQuote(projectId, now)</code> 按整点小时与项目种子生成需求、营收、成本及情绪指数，结合周期函数与日间插值扰动计算每份价格，并返回 24 小时涨跌和最多七日历史。当期项目不展示上市前价格。行情与用户行为无关，不需要定时向账本写入或调用外部行情接口。</p>
+          <ul>
+            <li><code>investProject(state, projectId, units = 1, now)</code>：校验整数份数、余额、开放期及 10 个持仓上限；同项目追加合并到原持仓，更新剩余本金、份额和平均成本。</li>
+            <li><code>exitProject(state, id, units = null, now)</code>：正整数表示部分卖出，null 表示全部卖出（含旧零碎份额）；校验余量，比例分摊成本，按当前市价扣 1% 手续费。</li>
+            <li>持仓字段：<code>units</code> 为剩余份额，活跃记录的 <code>principal</code> 为剩余成本，<code>invested</code> 为累计买入成本，<code>returned</code> 为累计卖出净到账，<code>realizedProfit</code> 为累计已实现盈亏。</li>
+            <li>全部卖出后状态为 <code>exited</code>，份额归零，<code>principal</code> 保留累计投入用于历史展示；部分卖出保持 active。旧记录缺少份额时按开始时行情折算，不改变旧已结束记录。</li>
+          </ul>
+          <pre>买入成本 = round(成交价 × 买入份数, 2)
+平均成本 = 剩余本金 / 剩余份数
+持仓市值 = round(剩余份数 × 当前每份价格, 2)
+卖出净到账 = round(round(卖出份数 × 成交价, 2) × 0.99, 2)
+本次已实现盈亏 = 卖出净到账 − 本次分摊成本</pre>
+          <p><code>investmentSpent</code> 累计买入支出，<code>investmentReturned</code> 累计卖出净到账（兼容旧返本）；卖出所得不重复通过普通收入入账。总资产按现金加剩余投资市值计算，浮动盈亏不单独再次计入。份数上限 10 亿，持仓记录上限 300；加仓与部分卖出复用原记录，近期交易流水保留 50 笔。</p>
+          <p>大型项目使用独立基准每份价格 ¥1,000／¥5,000／¥10,000／¥50,000，原有项目价格模型保持不变。投资消息为 <code>INVEST_PROJECT { projectId, units }</code> 与 <code>EXIT_PROJECT { id, units? }</code>；后台缺失买入份数时拒绝，卖出省略份数时全部卖出。</p>
+          <p>藏品资产汇总采用发现时账面价值，收藏品页面展示每周市价；出售校验周标识、报价、持有状态及委托额度，原值以内转现金，只有溢价作为独立收入。</p>
+        </section>
+        <section id="current-persistence" class="section">
+          <h2>成就、数据兼容与验证</h2>
+          <p><code>achievementStats</code> 保存深度阅读次数、有效浏览日、最后活跃日期和最多 1,000 个归一化网站域名；仅有效浏览推进，任务与经营奖励不增加。已有总浏览、累计收益、藏品、地产、公司交付、装备等级和已卖出投资可直接计算进度。</p>
+          <p><code>syncAchievements</code> 在账本结算、读取及交易保存时合并达到条件的 ID 到 <code>unlockedAchievements</code>。已解锁不撤销，不新增现金，原有 4 个提醒兼容。界面将 54 个里程碑与基于 <code>SHOP_ITEMS</code>、<code>unlockInfo</code> 的 9 项装备解锁合并到“探索越多，选择越多”，统一计数为 63 项，共用卡片、分类和状态筛选，不再单独渲染装备路线。</p>
+          <p>沿用 schema 6，新增默认字段增量合并。旧 schema 迁移前保存原始快照，仓库队列串行执行交易，失败不写入状态，防止并发重复出售或超卖。重置今日保留投资、成就、委托额度与经营状态；重置全部清空本地数据。数据保存在 <code>chrome.storage.local</code>，演示使用独立 localStorage，不连接真实扩展账本。</p>
+          <pre>node --test extension/tests/*.test.mjs
+node scripts/preview-server.mjs</pre>
+          <p>测试覆盖资金扣款、平均成本、部分卖出、已实现盈亏、份额边界、10 项持仓上限、旧零碎份额、三周轮换、过期项目卖出、并发防超卖及成就永久保留。完整运行与页面入口见 <a href="README.md">项目 README</a>。</p>
+        </section>
+        <details class="section" id="historical-design">
+          <summary>展开早期技术方案 v0.1 存档（历史设想，以前述当前实现为准）</summary>
         <section class="hero">
           <div class="eyebrow">Technical Design · v0.1</div>
           <h1>网页资产计<br />本地实现方案</h1>
@@ -914,6 +963,7 @@ type AppState = {
         <div class="footer">
           本页为本地技术方案 v0.1，对齐 <a href="internet-odometer-prd.html">PRD v0.3</a>。可直接作为扩展脚手架的实现说明书。
         </div>
+        </details>
       </main>
     </div>
   </div>

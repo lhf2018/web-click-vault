@@ -864,10 +864,10 @@
           <div class="fact-grid">
             <div class="fact">
               <span>版本</span>
-              <strong>v0.3</strong>
+              <strong>v0.9.0</strong>
             </div>
             <div class="fact">
-              <span>单次上限</span>
+              <span>基础上限</span>
               <strong>≤ ¥10</strong>
             </div>
             <div class="fact">
@@ -879,12 +879,16 @@
               <strong>本地优先</strong>
             </div>
           </div>
-          <p class="sidebar-note">每次有效打开按多指标权重动态存入一笔钱，单次不超过 10 元。</p>
+          <p class="sidebar-note">2026-11-18 更新。基础浏览收益最高 ¥10，装备加成后可超过；投资行情独立于浏览与任务。</p>
         </div>
 
         <div class="sidebar-block">
           <nav class="toc" aria-label="目录">
-            <a href="#overview" aria-current="true"><span class="toc-num">01</span>产品定义</a>
+            <a href="#current-product" aria-current="true"><span class="toc-num">新</span>当前产品规则</a>
+            <a href="#current-finance"><span class="toc-num">新</span>份额投资与行情</a>
+            <a href="#current-achievements"><span class="toc-num">新</span>成就与数据兼容</a>
+            <a href="#historical-design"><span class="toc-num">档</span>早期设计存档</a>
+            <a href="#overview"><span class="toc-num">01</span>早期产品定义</a>
             <a href="#loop"><span class="toc-num">02</span>核心循环</a>
             <a href="#rules"><span class="toc-num">03</span>点击规则</a>
             <a href="#formula"><span class="toc-num">04</span>权重公式</a>
@@ -905,6 +909,42 @@
       </aside>
 
       <main class="main">
+        <section id="current-product" class="section">
+          <div class="eyebrow">Implemented Product · 0.9.0 / schema 6 · 2026-11-18</div>
+          <h1>网页资产计 · 当前产品规则</h1>
+          <p>将有效浏览积累为本地虚拟资产，用于收藏、轻度经营与份额投资。本节说明已实现行为；下方折叠区保留早期 PRD，仅供追溯。安装与完整参数见 <a href="README.md">项目 README</a>。</p>
+          <h2>页面与核心循环</h2>
+          <p>资产汇总、增长商店、我的地产、我的公司、收藏品、资产置换、项目投资、成就、账本与设置、每周探索任务均为独立侧栏入口。浏览在导航离开、关闭标签或达到 180 秒上限后结算，URL 去重约 90 秒。9 件装备各最多 10 级，满级显示完成状态。</p>
+          <h2>网站专属收藏品</h2>
+          <p>收藏品被动掉落：有效可见停留至少 30 秒，每次概率 3%，每天最多 3 件、同一网站每天最多 1 件、同一来源页面终身只发现一次。徽章、书签、芯片是外形，域名与页面路径组成开放藏系；标题、站点名、主题色及代码元素影响身份和展示，不读取正文或加载外部图片。</p>
+          <p>发现时价值随探索等级和品相确定，最高初始价值 ¥621。收藏品页直接显示每件浮动价格、六周走势及收购委托，不再单设行情页。行情每周本地生成，常规市价为发现时价值的 65%–140%；本周指定品类委托再加价 10%，全账户每周限 2 件。资产汇总保留发现时账面价值，出售按行情成交，无固定原价保底。</p>
+          <h2>轻度经营与资产置换</h2>
+          <p>公司共用个人现金，不设独立账户。支持招聘、两类设施和稳健／精品／风险策略；风险单可能亏损，连续亏损两单切回稳健。地产最多持有 3 块，有效经营及升级遵守日期与次数门槛。装备、地产和公司设施可按可核实投入的 70% 出售或同类置换；员工和公司主体不出售。</p>
+        </section>
+        <section id="current-finance" class="section">
+          <h2>独立项目行情与份额交易</h2>
+          <p>同时开放 24 个项目：20 个常驻项目加 4 个当期项目。自 2026-01-05 UTC 起，每 21 天更换 4 个当期项目；页面显示下次上新日期。过期项目停止买入与加仓，但持仓继续计价并可卖出。</p>
+          <p>需求、营收、成本与情绪指数根据时间及项目种子在本机演算，每小时报价，展示 24 小时涨跌和近七日价格。同小时刷新不重新随机，离线后按当前时间计算，与浏览、任务及用户等级无关，不接真实证券行情。</p>
+          <ul>
+            <li>按整数份数买入，提供 10、100、1,000 份和最大可买快捷选项，可追加同一持仓并更新加权平均成本。</li>
+            <li>可部分卖出或全部卖出，按成交时市价扣 1% 手续费；部分卖出按份数比例分摊成本。</li>
+            <li>最多同时持有 10 个不同项目；单次整数交易及单项目持仓上限 10 亿份。旧零碎份额可全部卖出清空，最多保留 300 笔持仓记录。</li>
+            <li>分别展示持仓市值、剩余成本、浮动盈亏和累计已实现盈亏。浮动盈亏不进入现金；卖出净到账含本金与盈亏，不重复计作浏览收入。</li>
+          </ul>
+          <table><thead><tr><th>大型项目</th><th>基准每份价格</th></tr></thead><tbody>
+            <tr><td>洲际清洁能源网络</td><td>¥1,000</td></tr><tr><td>近地轨道物流港</td><td>¥5,000</td></tr>
+            <tr><td>新世代晶圆基地</td><td>¥10,000</td></tr><tr><td>深蓝海底计算枢纽</td><td>¥50,000</td></tr>
+          </tbody></table>
+          <p>上述为基准价，实际买卖价随行情变化；可以通过增加份数扩大投入，原有持仓不会因扩容而重定价。</p>
+        </section>
+        <section id="current-achievements" class="section">
+          <h2>54 个永久成就与数据兼容</h2>
+          <p>原有 4 个收益里程碑，加上浏览、阅读、活跃天数、网站探索、财富、收藏、地产、公司交付、装备总等级、投资成交十条路线各 5 个目标。54 个里程碑与 9 项装备解锁合并到“探索越多，选择越多”，共 63 项进度，统一计数、分类和状态筛选。装备归入“装备解锁”分类，沿用原有门槛；已获得的里程碑永久保留，不奖励额外现金，新成就不批量弹窗。</p>
+          <p>阅读、活跃日与不同网站从新增统计版本开始累计，其余按已有记录计算；域名统计最多保留 1,000 个。每周探索任务仍独立，奖励不推进浏览统计。持有量超过当前玩法上限的远期目标仅预留，不表示已开放对应资产位。</p>
+          <p>沿用 schema 6，新增字段按默认值兼容。重置今日保留持仓份额、成本、盈亏、成就和委托额度；重置全部清空本地记录。行情为模拟数据，全部金额为虚拟资产，数据不跨设备同步。</p>
+        </section>
+        <details class="section" id="historical-design">
+          <summary>展开早期 PRD v0.3 存档（历史设想，以前述当前规则为准）</summary>
         <section class="hero" aria-labelledby="hero-title">
           <div class="hero-grid">
             <div class="hero-copy">
@@ -1560,6 +1600,7 @@
         <div class="footer">
           本页为概念 PRD 草案 v0.3：固定 1 页 = ¥10 已改为四指标权重动态入账（单次 ≤ ¥10）。
         </div>
+        </details>
       </main>
     </div>
   </div>
