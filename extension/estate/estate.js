@@ -1,5 +1,6 @@
 import { ESTATE_LEVELS, ESTATE_PRICE, ESTATE_SLOTS } from '../core/estate.js';
 import { walletBalance } from '../core/shop.js';
+import { estateLandmark } from '../core/journey.js';
 const $ = id => document.getElementById(id);
 const money = n => `¥${(n || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 let state, busy = false, revision = 0, confirming = false;
@@ -16,14 +17,26 @@ function render() {
   if (!estates.length) $('owned').append(element('p', 'estate-empty', '街区还空着。从下方挑一个常去的网站，开启你的第一份产业。'));
   for (const estate of estates) {
     const level = ESTATE_LEVELS[estate.level - 1], next = ESTATE_LEVELS[estate.level];
+    const landmark = estateLandmark(estate);
     const card = element('article', 'product', '');
     const art = element('div', 'product-art estate-art', ''); art.dataset.level = estate.level;
-    art.append(element('span', 'symbol', level.symbol), element('span', 'product-level', `Lv.${estate.level} · ${level.name}`));
+    art.style.setProperty('--landmark-color', landmark.color);
+    const building = element('div', 'landmark-building', '');
+    building.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < landmark.level; i++) {
+      const floor = element('div', 'landmark-floor', '');
+      for (let j = 0; j < 3; j++) floor.append(element('i', '', ''));
+      building.append(floor);
+    }
+    art.append(building, element('span', 'product-level', `Lv.${estate.level} · ${landmark.title}`));
     const body = element('div', 'product-body', '');
-    body.append(element('h3', 'estate-host', estate.host), element('p', 'description', `${level.name} · 基础收益额外 +${Math.round(level.coefficient * 100)}%`));
+    body.append(element('h3', 'estate-host', estate.host), element('p', 'description', `${landmark.title} · 基础收益额外 +${Math.round(level.coefficient * 100)}%`));
+    const stages = element('div', 'estate-stages', '');
+    for (const step of landmark.milestones) stages.append(element('span', step.reached ? 'reached' : '', `${step.reached ? '●' : '○'} ${step.name}`));
+    body.append(stages);
     const today = estate.lastDay === state.dayKey ? estate.dailyVisits : 0;
     body.append(element('p', 'estate-progress', `今日经营 ${today} / 3 · 累计收入 ${money(estate.income)}`));
-    body.append(element('p', 'estate-progress', next ? `升级${next.name}：经营 ${estate.visits} / ${next.visits} 次 · ${estate.days} / ${next.days} 天` : `总部已建成 · 累计经营 ${estate.visits} 次 / ${estate.days} 天`));
+    body.append(element('p', 'estate-progress', next ? `升级${next.name}：还需 ${landmark.next.visits} 次经营 / ${landmark.next.days} 天` : `总部已建成 · 累计经营 ${estate.visits} 次 / ${estate.days} 天`));
     if (next) {
       const progress = document.createElement('progress'); progress.max = 1;
       progress.value = Math.min(1, estate.visits / next.visits, estate.days / next.days);

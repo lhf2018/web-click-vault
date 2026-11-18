@@ -1,0 +1,29 @@
+.journey-panel{margin:12px 0 30px;padding:24px;border:1px solid #d8dfd0;border-radius:14px;background:linear-gradient(135deg,#eef1e5,#faf9ef)}
+.journey-panel h2{font-family:Georgia,"Songti SC","SimSun",serif;font-size:24px;margin:8px 0}
+.journey-panel h3{font-size:15px;margin:8px 0;color:#284c3c;overflow-wrap:anywhere}.journey-panel h4{font-size:13px;margin:12px 0 8px}
+.journey-note,.journey-panel p{font-size:11px;color:#65745f;line-height:1.9;overflow-wrap:anywhere}.journey-note{margin:8px 0 16px}
+.journey-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
+.journey-card{border:1px solid #dce2d1;border-radius:10px;padding:16px;background:#fffdf5;min-width:0}
+.journey-card p{margin:8px 0}.journey-card progress{display:block;width:100%;height:5px;accent-color:#648351;margin:12px 0}
+.journey-panel details{margin-top:14px;border-top:1px solid #dce2d1;padding-top:12px}
+.journey-panel summary{font-size:12px;color:#386047;cursor:pointer;line-height:1.8}.journey-panel summary:focus-visible{outline:2px solid #aa874a;outline-offset:4px}
+.journey-link{display:inline-block;font-size:11px;color:#306247;text-decoration:underline;text-underline-offset:4px;line-height:1.8;overflow-wrap:anywhere}
+.journey-pill{display:inline-block;border:1px solid #d4dfcb;border-radius:20px;padding:4px 9px;color:#536d45;background:#eff3e5;font-size:10px}
+.journey-stages{display:flex;flex-wrap:wrap;gap:6px 10px;margin:14px 0;font-size:9px;color:#88927f}.journey-stages .reached{color:#3a6547;font-weight:600}
+.landmark-scene{height:140px;display:flex;align-items:flex-end;justify-content:center;gap:17px;padding:12px;border-radius:7px;background:radial-gradient(ellipse at center,#e5e9d9,#f5f1e2);border-bottom:2px solid #c6cfb8;color:var(--landmark-color);position:relative}
+.landmark-building{display:flex;flex-direction:column-reverse;min-width:70px;background:var(--landmark-color);border-radius:5px 5px 0 0;box-shadow:7px 5px 0 #183a2d18;border-top:5px solid #c9b47a;padding:3px 8px}
+.landmark-floor{display:flex;gap:8px;justify-content:center;padding:5px 0}.landmark-floor i{display:block;width:10px;height:9px;background:#f2dc9f;border:1px solid #f9edc2}
+.landmark-star{position:absolute;top:15px;right:23px;font:25px Georgia,serif;color:#a28a50}.landmark-tree{font-size:43px;line-height:1}
+.display-emblem{display:grid;place-items:center;height:80px;font:43px Georgia,serif;color:#e8d49a;background:radial-gradient(ellipse,#45634d,#244a3a);border-radius:7px;border:1px solid #b09c66;margin-bottom:12px}
+.journey-button{border:1px solid #bcccad;background:#edf1e5;border-radius:6px;padding:7px 11px;font-size:11px;color:#3d603c;line-height:1.7;text-align:left;overflow-wrap:anywhere}.journey-button:hover{background:#e0e8d5}.journey-button:disabled{opacity:.5;cursor:wait}
+.display-choices{display:flex;flex-wrap:wrap;gap:8px;max-height:280px;overflow:auto;padding:12px 2px}
+.asset-composition{display:flex;gap:3px;height:17px;overflow:hidden;border-radius:5px;margin:18px 0 10px;background:#dfe5d5}.asset-part{flex-basis:0;min-width:0}.asset-part[style*="flex-grow: 0;"]{display:none}
+.part-0{background:#2e604a}.part-1{background:#819568}.part-2{background:#b59b5b}.part-3{background:#70949a}.part-4{background:#947b9f}.part-5{background:#b87b60}
+.asset-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:10px;color:#5f705b}.asset-legend span:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}.legend-0:before{background:#2e604a}.legend-1:before{background:#819568}.legend-2:before{background:#b59b5b}.legend-3:before{background:#70949a}.legend-4:before{background:#947b9f}.legend-5:before{background:#b87b60}
+.journey-feedback{font-size:12px;color:#94623c;line-height:1.8}.journey-feedback:empty{display:none}
+@media(max-width:1150px){.journey-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.journey-panel{padding:16px}.journey-grid{grid-template-columns:1fr}.journey-panel h2{font-size:21px}}
+/* The overview map belongs to the existing asset summary. */
+.summary-total .overview-map{margin:20px 0 0;padding:16px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;background:none}
+.summary-total .overview-map h2{font:600 14px "Segoe UI","Microsoft YaHei",sans-serif;margin:0 0 12px}
+.summary-total .overview-map .asset-composition{margin-top:0}

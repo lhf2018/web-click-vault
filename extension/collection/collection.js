@@ -12,8 +12,21 @@ function collectibleArt(item, type) {
   const object = el('div', null, 'artifact-object');
   const mark = identity.mark;
   object.append(el('span', null, 'artifact-detail'), el('b', item.type === 'chip' ? '{ }' : mark, 'artifact-mark'), el('span', item.type === 'bookmark' ? item.title : item.host || identity.series, 'artifact-inscription'));
+  if (identity.component) {
+    art.className += ` web-specimen component-${identity.component.kind}`;
+    const fragment = el('div', null, 'web-fragment');
+    const chrome = el('div', null, 'fragment-chrome');
+    chrome.append(el('span', '•••'), el('span', item.host || 'WEB'));
+    const surface = el('div', null, 'fragment-surface');
+    surface.append(el('b', identity.component.kind === 'icon' ? identity.mark : identity.component.symbol, 'fragment-symbol'));
+    const lines = el('div', null, 'fragment-lines');
+    for (let i = 0; i < 3; i++) lines.append(el('i'));
+    surface.append(lines);
+    fragment.append(chrome, surface, el('span', identity.component.label, 'fragment-label'));
+    object.append(fragment);
+  }
   art.append(el('span', `${identity.finish} / ${identity.edition}`, 'exhibit-number'), object,
-    el('span', type.name, 'exhibit-caption'), el('span', quality === 'pristine' ? '✦ 珍藏品相' : quality === 'worn' ? '岁月留痕' : quality === 'classic' ? '经典藏品' : '保存良好', 'condition-tag'));
+    el('span', identity.component?.label || type.name, 'exhibit-caption'), el('span', quality === 'pristine' ? '✦ 珍藏品相' : quality === 'worn' ? '岁月留痕' : quality === 'classic' ? '经典藏品' : '保存良好', 'condition-tag'));
   return art;
 }
 function render() {
@@ -43,6 +56,7 @@ function render() {
     const body = el('div', null, 'souvenir-body');
     body.append(el('span', `${type.rarity} · ${type.name}`, 'rarity'), el('h3', identity.name), el('p', `${identity.series} · #${identity.edition}`), el('p', `发现于 ${new Date(item.foundAt).toLocaleString('zh-CN')}`));
     if (item.collectibleName) body.append(el('p', item.title, 'source-title'));
+    if (identity.component) body.append(el('p', identity.component.detail, 'specimen-story'));
     const sold = item.soldAt != null, displayedPrice = sold ? item.salePrice ?? item.value : quote;
     body.append(el('p', `发现时估值 ${money(item.value)}${item.foundLevel ? ` · Lv.${item.foundLevel}` : ''}`));
     body.append(el('p', `${sold ? '成交价格' : '当前市价'} ${money(displayedPrice)}`, 'price'));

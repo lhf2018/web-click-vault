@@ -99,7 +99,8 @@ test('achievement page merges milestones and equipment into 63 entries with shar
   assert.equal(get('achievementWall').children.length, 9);
   get('achievementFilter').value = 'unlocked'; get('achievementFilter').change();
   assert.equal(get('achievementWall').children.length, 1);
-  assert.ok(get('achievementWall').children[0].children.some(n => n.textContent.includes('可前往增长商店选购')));
+  const containsText = (element, text) => element.textContent.includes(text) || element.children.some(child => containsText(child, text));
+  assert.ok(containsText(get('achievementWall').children[0], '可前往增长商店选购'));
   const html = await readFile(new URL('../achievements/index.html', import.meta.url), 'utf8');
   assert.equal((html.match(/class="growth-section"/g) || []).length, 1);
   assert.ok(html.includes('探索越多，选择越多'));

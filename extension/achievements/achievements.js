@@ -24,11 +24,25 @@ function renderAchievements() {
   $('achievementWall').replaceChildren();
   for (const a of visible) {
     const card = node('article', null, `achievement-card${a.unlocked ? ' unlocked' : ''}`);
-    card.append(node('span', a.unlocked ? '✦' : '◇', 'achievement-emblem'), node('small', a.category), node('h3', a.title), node('p', a.requirement));
+    const top = node('div', null, 'achievement-top');
+    top.append(node('small', a.category), node('span', a.unlocked ? '✓ 已达成' : '◷ 进行中', 'achievement-state-tag'));
+    const emblem = node('div', null, 'achievement-emblem');
+    const symbols = { '浏览足迹': '✧', '深度阅读': '▤', '持续探索': '☀', '网站探索': '◎', '财富积累': '◈', '奇物收藏': '✦', '地产建设': '⌂', '公司经营': '▥', '装备成长': '⚒', '项目投资': '↗', '装备解锁': '⚒' };
+    emblem.append(node('span', symbols[a.category] || '✧'));
+    emblem.setAttribute('aria-hidden', 'true');
+    const art = node('div', null, 'achievement-art');
+    art.append(emblem, node('span', a.unlocked ? 'MILESTONE ACHIEVED' : 'THE JOURNEY CONTINUES', 'achievement-inscription'));
+    const body = node('div', null, 'achievement-body');
+    body.append(node('h3', a.title), node('p', a.requirement));
     const progress = node('progress'); progress.max = 1; progress.value = a.progress; progress.setAttribute('aria-label', `${a.title}进度`);
     const hint = a.equipment ? (a.unlocked ? '已解锁 · 可前往增长商店选购' : `解锁进度 ${Math.round(a.progress * 100)}%`)
       : a.unlocked ? '已解锁 · 永久纪念' : `${Math.min(a.current, a.threshold).toLocaleString('zh-CN')} / ${a.threshold.toLocaleString('zh-CN')}`;
-    card.append(progress, node('strong', hint));
+    const footer = node('div', null, 'achievement-footer');
+    const caption = node('div', null, 'achievement-progress-caption');
+    caption.append(node('span', a.unlocked ? '旅程已留印' : '达成进度'), node('span', `${Math.round(a.progress * 100)}%`));
+    footer.append(caption, progress, node('strong', hint));
+    body.append(footer);
+    card.append(top, art, body);
     $('achievementWall').append(card);
   }
   if (!visible.length) $('achievementWall').append(node('p', '这个分类下暂无符合条件的成就。', 'empty'));

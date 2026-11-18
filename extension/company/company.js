@@ -1,5 +1,6 @@
 import { COMPANY_TYPES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_FACILITIES } from '../core/company.js';
 import { walletBalance } from '../core/shop.js';
+import { companyBrief } from '../core/journey.js';
 const $ = id => document.getElementById(id);
 const money = n => `¥${(n || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 let buildingReady = false;
@@ -30,22 +31,31 @@ function render() {
   if (!companies.length) $('companies').append(el('p', 'company-empty', '第一家公司，等待你起一个名字。创办后即可自动接单。'));
   for (const company of companies) {
     const type = companyType(company), order = company.order;
+    const brief = companyBrief(company), projects = company.history || [];
     const card = el('article', 'product', '');
     const art = el('div', 'product-art', ''); art.append(el('span', 'symbol', type.symbol), el('span', 'product-level', `Lv.${companyLevel(company)} · 自动经营中`));
     const body = el('div', 'product-body', '');
-    body.append(el('span', 'category-label', type.name), el('h3', 'company-name', company.name),
+    body.append(el('span', 'category-label', `${type.name} · ${brief.rank} · 专长：${brief.specialty}`), el('h3', 'company-name', company.name),
       el('p', 'company-meta', `已交付 ${company.completed} 单 · 累计净收益 ${money(company.income - (company.losses || 0))}`),
       el('p', 'company-meta', `总部：${company.headquarters || '线上办公室'}`),
-      el('h4', 'company-order', order.title), el('p', 'company-meta', `${order.seen.length} / ${order.target} ${type.unit} · 交付净收益 ${money(order.reward)}${order.mode === 'risk' ? ' / 10% 概率亏损 ¥20' : ''}`));
+      el('h4', 'company-order', order.title),
+      el('span', 'company-client', `委托方 · ${brief.client}`), el('p', 'company-story', brief.story),
+      el('p', 'company-meta', `${order.seen.length} / ${order.target} ${type.unit} · 交付净收益 ${money(order.reward)}${order.mode === 'risk' ? ' / 10% 概率亏损 ¥20' : ''}`));
     const progress = document.createElement('progress'); progress.max = order.target; progress.value = order.seen.length;
     progress.setAttribute('aria-label', `${company.name}当前订单进度`); body.append(progress);
     if (order.gross != null) body.append(el('p', 'company-meta', `合同 ${money(order.gross)} − 制作 ${money(order.cost)} − 薪酬 ${money(order.salary)}`));
     body.append(el('p', 'special-effect', companyLevel(company) < 5 ? `再完成 ${5 - company.completed % 5} 单，自动升至 Lv.${companyLevel(company) + 1}` : '已达最高等级 · 持续自动接单'));
     renderManagement(body, company);
-    const history = el('details', 'company-history', ''); history.append(el('summary', '', `作品履历 · 最近 ${company.history.length} 项`));
+    const history = el('details', 'company-history', ''); history.append(el('summary', '', `作品档案 · 累计 ${company.completed || 0} 次交付 · 最近 ${projects.length} 项`));
     const list = document.createElement('ul');
-    if (!company.history.length) list.append(el('li', '', '首份作品正在酝酿。'));
-    for (const project of company.history) list.append(el('li', '', `${project.title} · ${project.amount < 0 ? '−' : '+'}${money(Math.abs(project.amount))}${project.outcome ? ` · ${project.outcome}` : ''} · ${new Date(project.ts).toLocaleString('zh-CN')}`));
+    if (!projects.length) list.append(el('li', '', '首份作品正在酝酿。'));
+    for (const project of projects) {
+      const entry = el('li', '', ''), story = companyBrief(company, project);
+      entry.append(el('strong', 'company-work-title', project.title),
+        el('p', 'company-meta', `${project.amount < 0 ? '−' : '+'}${money(Math.abs(project.amount))}${project.outcome ? ` · ${project.outcome}` : ''} · ${new Date(project.ts).toLocaleString('zh-CN')}`),
+        el('span', 'company-client', `故事委托方 · ${story.client}`), el('p', 'company-story', story.story));
+      list.append(entry);
+    }
     history.append(list); body.append(history); card.append(art, body); $('companies').append(card);
   }
   const selected = $('headquarters').value;

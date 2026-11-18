@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
 import { COMPANY_TYPES, companyPrice, companyLevel, companyType, createCompany, manageCompany, COMPANY_STAFF, COMPANY_FACILITIES } from '../core/company.js';
 import { walletBalance } from '../core/shop.js';
+import { companyBrief } from '../core/journey.js';
 import { defaultState } from '../core/ledger.js';
 const source = (await readFile(new URL('../company/company.js', import.meta.url), 'utf8')).replace(/^import .*;\r?\n/gm, '');
 const flush = () => new Promise(resolve => setImmediate(resolve));
@@ -14,7 +15,7 @@ function setup(sendMessage) {
     addEventListener(event, fn) { this[event] = fn; }, setAttribute() {}, focus() { this.focused = true; } }; }
   const get = id => { if (!nodes.has(id)) nodes.set(id, node()); return nodes.get(id); };
   get('companyType').value = 'publisher'; get('status').textContent = '正在读取账本…';
-  vm.runInNewContext(source, { COMPANY_TYPES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_FACILITIES, walletBalance,
+  vm.runInNewContext(source, { companyBrief, COMPANY_TYPES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_FACILITIES, walletBalance,
     document: { getElementById: get, createElement: node }, Option: function(text, value) { return { text, value }; },
     chrome: { runtime: { sendMessage }, storage: { onChanged: { addListener() {} } } },
     window: { addEventListener() {}, confirm: () => true }, setTimeout, clearTimeout });
@@ -96,4 +97,27 @@ test('double submission sends only one request and pending state is visible', as
   assert.equal(ui.get('createButton').disabled, true);
   release({ ok: false, error: '请重试' }); await first;
   assert.equal(ui.get('createButton').disabled, false);
+});
+
+test('merged company cards show old orders and work stories without rewriting legacy data', async () => {
+  const state = createCompany(funded(), '老出版社', 'publisher');
+  const company = state.companies[0];
+  company.completed = 5;
+  company.history = [{ title: '旧作品', amount: 80, ts: 123 }];
+  delete company.strategy; delete company.staff; delete company.facilities;
+  const before = structuredClone(state);
+  const ui = setup(async () => response(state)); await flush();
+  const texts = [];
+  const walk = n => { texts.push(n.textContent); (n.children || []).forEach(walk); };
+  walk(ui.get('companies'));
+  assert.ok(texts.some(t => t.includes('街区口碑')));
+  assert.ok(texts.includes(company.order.title));
+  assert.ok(texts.some(t => t.startsWith('委托方 ·')));
+  assert.ok(texts.includes('作品档案 · 累计 5 次交付 · 最近 1 项'));
+  assert.ok(texts.includes('旧作品'));
+  assert.ok(texts.some(t => t.startsWith('故事委托方 ·')));
+  assert.deepEqual(state, before);
+  const html = await readFile(new URL('../company/index.html', import.meta.url), 'utf8');
+  assert.ok(html.includes('正在发生的生意'));
+  assert.equal(html.includes('../journey/journey.js'), false);
 });

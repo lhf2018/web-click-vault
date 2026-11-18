@@ -1,1 +1,68 @@
-.achievement-filters{display:flex;flex-wrap:wrap;gap:18px;margin:20px 0;color:var(--muted);font-size:12px}.achievement-filters select{margin-left:8px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fffef8;color:var(--green)}.achievement-wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.achievement-card{position:relative;display:flex;flex-direction:column;gap:10px;padding:24px;border:1px solid var(--line);border-radius:14px;background:#f6f5ef}.achievement-card.unlocked{background:linear-gradient(145deg,#fffdf1,#edf3e8);border-color:#b5c5a4}.achievement-emblem{display:grid;place-items:center;width:48px;height:48px;border:1px solid #d8dbcd;border-radius:50%;font-size:26px;color:#9b9d90;background:#eeeee5}.unlocked .achievement-emblem{background:linear-gradient(135deg,#f4e1a4,#fff5d6);border-color:#d6ba73;color:#876624;box-shadow:0 3px 12px #ba9a4820}.achievement-card h3{font-size:17px;margin:0;color:var(--green)}.achievement-card small{color:var(--muted);font-size:10px}.achievement-card p{font-size:12px;color:var(--muted);line-height:1.8;margin:0;min-height:42px}.achievement-card progress{width:100%;height:6px;margin-top:auto;accent-color:var(--green)}.achievement-card strong{font-size:11px;font-weight:500;color:var(--muted)}.achievement-card.unlocked strong{color:var(--green)}.achievement-wall .empty{grid-column:1/-1}@media(max-width:1000px){.achievement-wall{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.achievement-wall{grid-template-columns:1fr}}
+.achievement-filters{display:flex;flex-wrap:wrap;gap:20px;margin:24px 0;color:var(--muted);font-size:12px;padding:14px 18px;background:#edf0e6;border:1px solid var(--line);border-radius:10px}
+.achievement-filters select{margin-left:8px;padding:8px 12px;border:1px solid #d5ddcf;border-radius:6px;background:#fffef8;color:var(--green)}
+.achievement-wall{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.achievement-card{position:relative;overflow:hidden;display:flex;flex-direction:column;border:1px solid #dce1d5;border-radius:14px;background:#fffef8;box-shadow:0 3px 12px #19382f04;transition:box-shadow .2s,transform .2s}
+.achievement-card:hover{transform:translateY(-3px);box-shadow:0 12px 26px #19382f12}
+.achievement-top{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:13px 14px 0}
+.achievement-top small{font-size:10px;color:#687668;letter-spacing:1px}
+.achievement-state-tag{font-size:10px;padding:4px 7px;border:1px solid #dce1d5;border-radius:20px;color:#667560;white-space:nowrap;background:#f3f5ec}
+.achievement-art{position:relative;display:flex;align-items:center;flex-direction:column;justify-content:center;gap:14px;height:124px;background:radial-gradient(ellipse at center,#e9eddf80,transparent 68%)}
+.achievement-emblem{position:relative;display:grid;place-items:center;width:60px;height:60px;border:1px dashed #a6b59d;border-radius:50%;background:#eef1e6;color:#7b9072;box-shadow:inset 0 0 0 7px #fffef8,inset 0 0 0 8px #d7dfcd}
+.achievement-emblem span{font:26px Georgia,serif}
+.achievement-inscription{font:8px Georgia,serif;letter-spacing:1px;color:#78886e}
+.achievement-body{padding:2px 16px 16px;display:flex;flex-direction:column;flex:1}
+.achievement-card h3{font-family:Georgia,"Songti SC","SimSun",serif;font-size:18px;margin:0 0 7px;color:var(--ink);line-height:1.5;overflow-wrap:anywhere}
+.achievement-card p{font-size:12px;color:#6e7b6b;line-height:1.9;margin:0 0 14px;min-height:40px;overflow-wrap:anywhere}
+.achievement-footer{margin-top:auto;padding-top:11px;border-top:1px solid #e1e6d9}
+.achievement-progress-caption{display:flex;justify-content:space-between;color:#6e7b6b;font-size:10px;margin-bottom:7px}
+.achievement-progress-caption span:last-child{font-variant-numeric:tabular-nums}
+.achievement-card progress{display:block;appearance:none;width:100%;height:5px;margin:0 0 9px;border:0;border-radius:4px;overflow:hidden;background:#e5eadd;accent-color:#82996e}
+.achievement-card progress::-webkit-progress-bar{background:#e5eadd;border-radius:4px}
+.achievement-card progress::-webkit-progress-value{background:#82996e;border-radius:4px}
+.achievement-card progress::-moz-progress-bar{background:#82996e;border-radius:4px}
+.achievement-card strong{display:block;font-size:10px;font-weight:400;color:#6e7b6b;line-height:1.8}
+.achievement-card.unlocked{background:linear-gradient(145deg,#294f40,#193b30);border-color:#a38e57;box-shadow:0 5px 18px #19382f14}
+.achievement-card.unlocked:after{content:"";position:absolute;inset:7px;border:1px solid #ddc98d30;border-radius:9px;pointer-events:none}
+.unlocked .achievement-top small{color:#c7d5c0}
+.unlocked .achievement-state-tag{background:#e7d39b;color:#3d4c30;border-color:#ebdcae}
+.unlocked .achievement-art{background:radial-gradient(ellipse at center,#dec98d18,transparent 65%)}
+.unlocked .achievement-emblem{border:3px double #a68b47;background:linear-gradient(135deg,#f7e9b9,#c5a45b 60%,#eddaa0);color:#36533a;box-shadow:0 6px 18px #0b241c50,inset 0 0 0 5px #f0dfa5,inset 0 0 0 6px #a68b47}
+.unlocked .achievement-emblem:before,.unlocked .achievement-emblem:after{content:"";position:absolute;top:44px;width:17px;height:20px;background:#b69c5e;clip-path:polygon(0 0,100% 0,100% 100%,50% 77%,0 100%);z-index:0}
+.unlocked .achievement-emblem:before{left:7px;transform:rotate(14deg)}
+.unlocked .achievement-emblem:after{right:7px;transform:rotate(-14deg)}
+.unlocked .achievement-inscription{color:#decb92}
+.achievement-card.unlocked h3{color:#f6edcf}
+.achievement-card.unlocked p,.achievement-card.unlocked strong{color:#c6d4be}
+.unlocked .achievement-footer{border-color:#d5c48b30}
+.unlocked .achievement-progress-caption{color:#dfcd99}
+.unlocked progress::-webkit-progress-value{background:linear-gradient(90deg,#ad9359,#ead69a)}
+.unlocked progress::-moz-progress-bar{background:#dfcd99}
+.achievement-wall .empty{grid-column:1/-1;padding:60px 20px;text-align:center;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}
+#achievementCount{white-space:nowrap;background:#edf0e6}
+@media(max-width:1350px){.achievement-wall{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1050px){.achievement-wall{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.achievement-wall{grid-template-columns:1fr}.achievement-filters{gap:12px;padding:12px}.section-heading{align-items:flex-start;flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.achievement-card{transition:none}.achievement-card:hover{transform:none}}
+
+/* Compact keeps the medal beside the title and the full progress below. */
+.achievement-card{display:grid;grid-template-columns:36px minmax(0,1fr);grid-template-rows:auto auto 1fr auto;column-gap:10px;row-gap:7px;padding:13px 15px;border-radius:11px}
+.achievement-top{grid-column:1/-1;padding:0;gap:6px}
+.achievement-top small{font-size:9px;letter-spacing:0}
+.achievement-state-tag{font-size:9px;padding:3px 6px}
+.achievement-art{grid-column:1;grid-row:2;height:38px;gap:0;background:none}
+.achievement-emblem{width:34px;height:34px;box-shadow:inset 0 0 0 3px #fffef8,inset 0 0 0 4px #d7dfcd}
+.achievement-emblem span{font-size:18px}
+.achievement-inscription{display:none}
+.achievement-body{display:contents}
+.achievement-card h3{grid-column:2;grid-row:2;align-self:center;font-size:15px;margin:0;line-height:1.5}
+.achievement-card p{grid-column:1/-1;font-size:11px;line-height:1.6;margin:0;min-height:0}
+.achievement-footer{grid-column:1/-1;margin-top:0;padding-top:8px}
+.achievement-progress-caption{font-size:9px;margin-bottom:5px}
+.achievement-card progress{height:4px;margin-bottom:5px}
+.achievement-card strong{font-size:9px;line-height:1.5}
+.unlocked .achievement-art{background:none}
+.unlocked .achievement-emblem{box-shadow:0 2px 6px #0b241c40,inset 0 0 0 2px #f0dfa5,inset 0 0 0 3px #a68b47}
+.unlocked .achievement-emblem:before,.unlocked .achievement-emblem:after{top:25px;width:9px;height:12px}
+.unlocked .achievement-emblem:before{left:4px}
+.unlocked .achievement-emblem:after{right:4px}
+.achievement-card.unlocked:after{inset:5px;border-radius:7px}

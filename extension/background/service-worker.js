@@ -1,4 +1,5 @@
 import { sellAtMarket } from '../core/market.js';
+import { toggleDisplayCollectible } from '../core/journey.js';
 import { sellAsset, tradeAsset } from '../core/exchange.js';
 import { investProject, exitProject } from '../core/investments.js';
 import { sellCollectible } from "../core/collectibles.js";
@@ -101,6 +102,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         await refreshBadge();
         sendResponse({ ok: true, state, week: buildWeekSeries(state,7) });
         return;
+      }
+      if (message?.type === 'TOGGLE_DISPLAY_COLLECTIBLE') {
+        if (!sender.url?.startsWith(chrome.runtime.getURL(''))) throw new Error('请从扩展收藏页操作');
+        const state = await updateState(current => toggleDisplayCollectible(current, message.id));
+        sendResponse({ ok: true, state }); return;
       }
       if (message?.type === 'BUY_ESTATE' || message?.type === 'UPGRADE_ESTATE') {
         const state = await updateState(current => message.type === 'BUY_ESTATE'

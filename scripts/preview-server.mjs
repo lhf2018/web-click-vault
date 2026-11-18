@@ -6,6 +6,7 @@ const root = path.resolve(fileURLToPath(new URL('../extension/', import.meta.url
 const demo = `<aside style="padding:12px;background:#fff4cc;font:12px sans-serif">演示预览 · 使用虚拟样例数据，不连接你的真实账本。<button id="demoEarn" style="margin-top:8px">模拟浏览入账 +¥10 × 当前倍率</button></aside>
 <script type="module">
 import { defaultState, applyDeposit, buildWeekSeries, claimWeeklyReward } from '/core/ledger.js';
+import { toggleDisplayCollectible } from '/core/journey.js';
 import { purchaseUpgrade } from '/core/shop.js';
 import { purchaseEstate, upgradeEstate } from '/core/estate.js';
 import { createCompany, manageCompany } from '/core/company.js';
@@ -22,6 +23,7 @@ window.chrome = {
  runtime: {getURL:relative=>'/'+relative,sendMessage:async ({type,itemId,...patch})=>{
  try {
  state=ensureWeek(state);
+ if(type==='TOGGLE_DISPLAY_COLLECTIBLE') state=toggleDisplayCollectible(state,patch.id);
  if(type==='CLAIM_WEEKLY_REWARD') state=claimWeeklyReward(state,patch.taskId,patch.weekKey);
  if(type==='SET_SETTINGS') state={...state,settings:{...state.settings,...patch}};
  if(type==='MARKET_SELL') state=sellAtMarket(state,patch.id,patch.mode,patch.week,patch.price);
@@ -58,13 +60,16 @@ if(location.pathname.startsWith('/collection/')) {
   refreshDemo();
  };
  const sampleButton=document.createElement('button');
- sampleButton.textContent='放入 3 件藏品样例（仅演示）';
+ sampleButton.textContent='放入 6 件网页组件藏品（仅演示）';
  document.querySelector('#demoTasks').after(sampleButton);
  sampleButton.onclick=()=>{
   const samples=[
-   {id:'sample-badge',type:'badge',title:'互联网漫游纪念章',host:'wikipedia.org',source:'https://www.wikipedia.org/',color:'#3d7c68',foundLevel:5,qualityPercent:12},
-   {id:'sample-bookmark',type:'bookmark',title:'写给深夜读者的一封信',host:'example.com',source:'https://example.com/',color:'#9a6848',foundLevel:5,qualityPercent:-10},
-   {id:'sample-chip',type:'chip',title:'开源工坊 · 星光电路',host:'github.com',source:'https://github.com/',color:'#43675c',foundLevel:10,qualityPercent:15},
+   {id:'sample-badge',type:'badge',webComponent:'icon',collectibleName:'Wikipedia · 站点字母印',title:'百科全书的入口',host:'wikipedia.org',source:'https://www.wikipedia.org/',color:'#3d7c68',foundLevel:5,qualityPercent:12},
+   {id:'sample-bookmark',type:'bookmark',webComponent:'article',collectibleName:'阅读小站 · 排版活字片',title:'写给深夜读者的一封信',host:'example.com',source:'https://example.com/',color:'#9a6848',foundLevel:5,qualityPercent:-10},
+   {id:'sample-chip',type:'chip',webComponent:'code',collectibleName:'GitHub · 代码块标本',title:'开源工坊',host:'github.com',source:'https://github.com/',color:'#43675c',foundLevel:10,qualityPercent:15},
+   {id:'sample-search',type:'badge',webComponent:'search',collectibleName:'探索小站 · 搜索框胶囊',title:'从好奇出发',host:'search.example.com',color:'#477d9c',foundLevel:5,qualityPercent:0},
+   {id:'sample-media',type:'badge',webComponent:'media',collectibleName:'声音小站 · 播放键琥珀',title:'午后的旋律',host:'music.example.com',color:'#9b546c',foundLevel:5,qualityPercent:10},
+   {id:'sample-navigation',type:'badge',webComponent:'navigation',collectibleName:'旅人小站 · 导航栏切片',title:'下一站风景',host:'travel.example.com',color:'#697c47',foundLevel:5,qualityPercent:0},
   ].map(item=>({...item,value:collectiblePrice(item.type,item.foundLevel,item.qualityPercent),day:state.dayKey,foundAt:Date.now(),soldAt:null}));
   state={...state,collectibles:[...samples,...(state.collectibles||[]).filter(item=>!samples.some(sample=>sample.id===item.id))]};
   refreshDemo();

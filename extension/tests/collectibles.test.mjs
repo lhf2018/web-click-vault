@@ -237,3 +237,33 @@ test('probe metadata stays with its source session and duplicate settlement cann
   assert.equal(data.assetMeterState.collectibles.length, 1);
   assert.equal(data.assetMeterState.totalVisits, 1);
 });
+
+test('component specimens use an allowlist, preserve page identity and keep legacy market quotes', () => {
+  for (const kind of ['code', 'navigation', 'search', 'media', 'article', 'icon']) {
+    const item = recordCollectibleVisit(defaultState(), visit('components.test', {
+      pageElements: { title: '页面标题', webComponent: kind, color: '#123456' },
+    })).collectibles[0];
+    assert.equal(item.webComponent, kind);
+    assert.equal(collectibleIdentity(item).component.kind, kind);
+    assert.equal(collectibleIdentity(JSON.parse(JSON.stringify(item))).component.kind, kind);
+    assert.equal(item.type, 'badge');
+    assert.equal(item.value, 8.5);
+    assert.equal(item.source, 'https://components.test/article');
+  }
+  assert.equal(cleanPageElements({ webComponent: '__proto__' }).webComponent, '');
+  assert.equal(cleanPageElements({ webComponent: '<script>' }).webComponent, '');
+  const code = recordCollectibleVisit(defaultState(), visit('code.test', {
+    pageElements: { hasCode: true, webComponent: 'media' },
+  })).collectibles[0];
+  assert.equal(code.webComponent, 'code');
+  assert.equal(code.type, 'chip');
+  const legacy = { id: 'legacy', host: 'old.test', title: '旧名称', type: 'badge', value: 80, soldAt: null };
+  const before = structuredClone(legacy);
+  const market = collectionMarket({});
+  const price = marketQuote(legacy, market);
+  assert.equal(collectibleIdentity(legacy).component, null);
+  assert.equal(collectibleIdentity(legacy).name, '旧名称');
+  assert.deepEqual(legacy, before);
+  assert.equal(marketQuote(legacy, market), price);
+  assert.equal(sellCollectible({ ...defaultState(), collectibles: [legacy] }, legacy.id).collectibleSales, 80);
+});
