@@ -1,17 +1,17 @@
 <!doctype html>
 <html lang="zh-CN">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>增长商店 · 网页资产计</title><link rel="stylesheet" href="shop.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>增长商店 · 网页资产计</title><link rel="stylesheet" href="shop.css"><link rel="stylesheet" href="../shared/shell.css"></head>
 <body>
 <div class="layout">
   <aside class="sidebar"><a class="brand" href="../popup/index.html"><span class="brand-icon">▤</span><span>网页资产计<small>你的浏览，正在积累。</small></span></a><div class="nav-label">资产实验室</div><a class="nav" href="../overview/index.html">◉ &nbsp; 资产汇总</a><a class="nav active" href="../shop/index.html" aria-current="page">◈ &nbsp; 增长商店</a><a class="nav" href="../estate/index.html">⌂ &nbsp; 我的地产</a><a class="nav" href="../company/index.html">▥ &nbsp; 我的公司</a><a class="nav" href="../collection/index.html">▧ &nbsp; 收藏品</a><a class="nav" href="../exchange/index.html">⇄ &nbsp; 资产置换</a><a class="nav" href="../investments/index.html">▧ &nbsp; 项目投资</a><a class="nav" href="../achievements/index.html">✧ &nbsp; 成就</a><a class="nav" href="../options/index.html">⚙ &nbsp; 账本与设置</a><a class="nav" href="../weekly/index.html">◇ &nbsp; 每周探索任务</a><div class="sidebar-bottom"><span class="live-dot"></span> 所有积累，只在本机<br><small>这里的金额均为虚拟资产。</small></div></aside>
   <main>
 
     <section class="hero">
-      <div><h1>把积累，变成<span>下一次增长。</span></h1></div>
+      <div><h1>增长商店</h1></div>
       <div class="hero-art" aria-hidden="true"><div class="orbit"></div><div class="orbit second"></div><span class="spark">✧</span><span class="art-label">GROW AS YOU GO</span></div>
     </section>
     <section class="stats shop-stats" aria-label="资产概况">
-      <div class="wallet"><span>可用余额</span><strong id="balance">—</strong><small>累计收益减去装备与地产消费</small></div>
+      <div class="wallet"><span>装备资产</span><strong id="balance">—</strong></div>
       <div><span>常驻收益倍率</span><strong id="multiplier">—</strong><small>装备特效满足条件时额外叠加</small></div>
       <div><span>累计投入</span><strong id="spent">—</strong><small>历史累计收益不会减少</small></div>
     </section>
@@ -27,10 +27,10 @@
     </section>
     <section class="bottom-grid">
       <div class="info-panel"><h2>好装备，长期陪伴。</h2><ol><li>常驻加成相加，装备特效满足浏览条件时额外叠加。</li><li>升级永久保留，下一次结算就能享受。</li><li>基础入账上限 ¥10，加成后的收益可以更高。</li></ol><p>示例：+10% 与 +30% 的装备叠加后，基础 ¥5 至少可入账 ¥7；满足装备特效时收益更高。没有离线利息，收益来自有效浏览。</p></div>
-      <div class="info-panel"><h2>你的增长足迹</h2><ul id="purchases" class="purchases"></ul><p class="fine-print">展示此版本开始记录的最近 30 次购买。已有装备等级完整保留。</p></div>
+      <div class="info-panel"><h2>你的增长足迹</h2><ul id="purchases" class="purchases"></ul></div>
     </section>
 
   </main>
 </div>
 <script type="module" src="shop.js"></script>
-</body></html>
+<script type="module" src="../shared/shell.js"></script></body></html>

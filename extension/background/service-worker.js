@@ -7,6 +7,7 @@ import { purchaseUpgrade } from "../core/shop.js";
 import { purchaseEstate, upgradeEstate } from "../core/estate.js";
 import { createCompany, manageCompany } from '../core/company.js';
 import {
+  restoreBackup,
   applyDwellFromProbe,
   discardRecoveries,
   dismissAchievement,
@@ -25,7 +26,7 @@ import {
   settleSession,
   updateSettings,
 } from "./session-tracker.js";
-import { loadState, resetAll, resetToday, updateState } from "../storage/repository.js";
+import { exportBackup, loadState, resetAll, resetToday, updateState } from "../storage/repository.js";
 import { buildWeekSeries, claimWeeklyReward } from "../core/ledger.js";
 
 chrome.runtime.onInstalled.addListener(async () => {
@@ -143,6 +144,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message?.type === "BUY_UPGRADE") {
         const state = await updateState((current) => purchaseUpgrade(current, message.itemId));
         sendResponse({ ok: true, state, week: buildWeekSeries(state, 7) });
+        return;
+      }
+      if (message?.type === 'EXPORT_BACKUP' || message?.type === 'IMPORT_BACKUP') {
+        if (!sender.url?.startsWith(chrome.runtime.getURL(''))) throw new Error('请从设置页操作');
+        if (message.type === 'EXPORT_BACKUP') sendResponse({ ok: true, backup: await exportBackup() });
+        else {
+          const state = await restoreBackup(message.backup);
+          await refreshBadge();
+          sendResponse({ ok: true, state, week: buildWeekSeries(state, 7) });
+        }
         return;
       }
       if (message?.type === "GET_STATE") {

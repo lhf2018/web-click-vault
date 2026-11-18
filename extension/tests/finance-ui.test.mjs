@@ -52,11 +52,11 @@ test('investment page invests then exits with correct principal return', async (
   const price = investmentQuote('zine').price;
   await ui.find('确认买入').click();
   assert.equal(ui.state().investments[0].status, 'active');
-  assert.equal(ui.get('metric').textContent, `¥${price.toFixed(2)}`);
+  assert.equal(ui.get('balance').textContent, `¥${price.toFixed(2)}`);
   await ui.find('全部卖出 ·').click();
   assert.equal(ui.state().investments[0].status, 'exited');
   assert.equal(walletBalance(ui.state()), Math.round((1000 - price + Math.round(price * 99) / 100) * 100) / 100);
-  assert.equal(ui.get('metric').textContent, '¥0.00');
+  assert.equal(ui.get('balance').textContent, '¥0.00');
 });
 
 test('share controls buy, add and partially sell selected quantities', async () => {

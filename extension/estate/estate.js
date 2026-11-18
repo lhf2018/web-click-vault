@@ -1,3 +1,4 @@
+import { assetOverview } from '../core/overview.js';
 import { ESTATE_LEVELS, ESTATE_PRICE, ESTATE_SLOTS } from '../core/estate.js';
 import { walletBalance } from '../core/shop.js';
 import { estateLandmark } from '../core/journey.js';
@@ -9,7 +10,7 @@ function element(tag, className, text) {
 }
 function render() {
   const estates = state.estates || [];
-  $('balance').textContent = money(walletBalance(state));
+  $('balance').textContent = money(assetOverview(state).estates);
   $('slots').textContent = `${estates.length} / ${ESTATE_SLOTS}`;
   $('income').textContent = money(estates.reduce((sum, row) => sum + row.income, 0));
   $('spent').textContent = money(state.estateSpent);
@@ -66,7 +67,7 @@ async function refresh() {
     if (!response?.ok) throw new Error(response?.error || '无法读取账本');
     if (current !== revision) return;
     state = response.state; render();
-    if ($('status').textContent === '正在读取账本…') $('status').textContent = '选择常去的网站，让每一次认真浏览都有新的收获。';
+    if ($('status').textContent === '正在读取账本…') $('status').textContent = '';
   } catch (error) { $('status').textContent = `${error.message}，请重新加载扩展后再试。`; }
 }
 async function transact(type, host) {

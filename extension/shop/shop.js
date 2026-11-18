@@ -1,3 +1,4 @@
+import { assetOverview } from '../core/overview.js';
 import { ensureWeek } from "../core/weekly.js";
 import { SHOP_ITEMS, SHOP_CATEGORIES, itemLevel, itemPrice, walletBalance, incomeMultiplier, unlockInfo, depositMultiplier } from '../core/shop.js';
 const $ = id => document.getElementById(id);
@@ -22,7 +23,7 @@ for (const group of SHOP_CATEGORIES) {
 }
 function render() {
   if (!state) return;
-  $('balance').textContent = money(walletBalance(state));
+  $('balance').textContent = money(assetOverview(state).equipment);
   $('multiplier').textContent = `×${incomeMultiplier(state)}`;
   $('spent').textContent = money(state.shopSpent);
   renderProducts();
@@ -100,7 +101,7 @@ async function refresh() {
     if (current !== revision) return;
     state = ensureWeek(response.state);
     render();
-    if ($('status').textContent==='正在读取账本…') $('status').textContent='常驻加成永久生效，探索与阅读可触发额外特效。';
+    if ($('status').textContent==='正在读取账本…') $('status').textContent='';
   } catch(error) { $('status').textContent = `${error.message}，请重新加载扩展后再试。`; }
 }
 async function buy(item) {

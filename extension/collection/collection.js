@@ -108,7 +108,7 @@ async function refresh() {
     if (!response?.ok) throw new Error(response?.error || '无法读取收藏，请重新加载扩展');
     if (current !== revision) return;
     state = response.state; render();
-    $('status').textContent = (state.collectibles || []).length >= 600 ? '历史发现已达 600 件，掉落已暂停。' : '自动发现已开启 · 每日最多 3 件 · 所有藏品保存在本机';
+    $('status').textContent = (state.collectibles || []).length >= 600 ? '历史发现已达 600 件，掉落已暂停。' : '';
   } catch (error) { $('status').textContent = error.message; }
 }
 $('filter').addEventListener('change', () => { if (state) render(); });

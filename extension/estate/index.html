@@ -1,21 +1,21 @@
 <!doctype html>
 <html lang="zh-CN">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>我的地产 · 网页资产计</title><link rel="stylesheet" href="../shop/shop.css"><link rel="stylesheet" href="estate.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>我的地产 · 网页资产计</title><link rel="stylesheet" href="../shop/shop.css"><link rel="stylesheet" href="estate.css"><link rel="stylesheet" href="../shared/shell.css"></head>
 <body><div class="layout">
   <aside class="sidebar"><a class="brand" href="../popup/index.html"><span class="brand-icon">▤</span><span>网页资产计<small>你的浏览，正在积累。</small></span></a><div class="nav-label">资产实验室</div><a class="nav" href="../overview/index.html">◉ &nbsp; 资产汇总</a><a class="nav" href="../shop/index.html">◈ &nbsp; 增长商店</a><a class="nav active" href="../estate/index.html" aria-current="page">⌂ &nbsp; 我的地产</a><a class="nav" href="../company/index.html">▥ &nbsp; 我的公司</a><a class="nav" href="../collection/index.html">▧ &nbsp; 收藏品</a><a class="nav" href="../exchange/index.html">⇄ &nbsp; 资产置换</a><a class="nav" href="../investments/index.html">▧ &nbsp; 项目投资</a><a class="nav" href="../achievements/index.html">✧ &nbsp; 成就</a><a class="nav" href="../options/index.html">⚙ &nbsp; 账本与设置</a><a class="nav" href="../weekly/index.html">◇ &nbsp; 每周探索任务</a><div class="sidebar-bottom"><span class="live-dot"></span> 所有积累，只在本机<br><small>这里的金额均为虚拟资产。</small></div></aside>
   <main>
 
-    <section class="hero"><div><h1>从一处小摊位，<span>长成你的互联网街区。</span></h1></div><div class="hero-art" aria-hidden="true"><div class="orbit"></div><span class="spark">⌂</span><span class="art-label">BUILD AS YOU BROWSE</span></div></section>
+    <section class="hero"><div><h1>我的地产</h1></div><div class="hero-art" aria-hidden="true"><div class="orbit"></div><span class="spark">⌂</span><span class="art-label">BUILD AS YOU BROWSE</span></div></section>
     <section class="stats" aria-label="地产概况">
-      <div class="wallet"><span>可用余额</span><strong id="balance">—</strong><small>已扣除装备与地产消费</small></div>
+      <div class="wallet"><span>地产估值</span><strong id="balance">—</strong></div>
       <div><span>持有地产</span><strong id="slots">—</strong><small>初始开放 3 个地产位</small></div>
       <div><span>累计经营收入</span><strong id="income">—</strong><small>不叠加装备倍率</small></div>
       <div><span>地产累计投入</span><strong id="spent">—</strong><small>累计收益不会因购买减少</small></div>
     </section>
     <p id="status" class="status" role="status" aria-live="polite">正在读取账本…</p>
-    <section class="growth-section"><div class="section-heading"><div><h2>我的街区</h2></div></div><p class="section-note">可见停留满 15 秒后有效结算，每块地产每天最多经营 3 次。</p><div id="owned" class="products"></div></section>
-    <section class="growth-section"><div class="section-heading"><div><h2>发现可收购的网站</h2></div><span class="local-tag">每块地契 ¥500</span></div><p class="section-note">有效浏览后自动发现网站，保留最近 100 个。</p><div id="discoveries" class="products"></div></section>
+    <section class="growth-section"><div class="section-heading"><div><h2>我的街区</h2></div></div><div id="owned" class="products"></div></section>
+    <section class="growth-section"><div class="section-heading"><div><h2>发现可收购的网站</h2></div><span class="local-tag">每块地契 ¥500</span></div><div id="discoveries" class="products"></div></section>
     <details class="info-panel"><summary>成长规则</summary><p>经营收入 = 基础浏览收益 × 地产经营系数。小摊位 20% → 店铺 35% → 工作室 50% → 大楼 75% → 总部 100%。基础收益最多按 ¥10 计算。</p><p>升级同时需要资产、累计经营次数和不同经营日期；升级进度永久保留。地产收入计入今日与累计收益，不增加浏览页数或任务进度。重置今日不会清除地产经营额度。可在资产置换页按可核实投入的 70% 出售地契，请按自己的浏览习惯经营。</p></details>
 
   </main>
-</div><dialog id="purchaseDialog" aria-labelledby="purchaseTitle"><h2 id="purchaseTitle">确认地产交易</h2><p id="purchaseMessage"></p><div class="dialog-actions"><button type="button" id="cancelPurchase">暂时不要</button><button type="button" id="confirmPurchase" class="buy">确认购买</button></div></dialog><script type="module" src="estate.js"></script></body></html>
+</div><dialog id="purchaseDialog" aria-labelledby="purchaseTitle"><h2 id="purchaseTitle">确认地产交易</h2><p id="purchaseMessage"></p><div class="dialog-actions"><button type="button" id="cancelPurchase">暂时不要</button><button type="button" id="confirmPurchase" class="buy">确认购买</button></div></dialog><script type="module" src="estate.js"></script><script type="module" src="../shared/shell.js"></script></body></html>

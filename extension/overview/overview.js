@@ -12,7 +12,7 @@ async function refresh() {
     for (const key of ['total', 'cash', 'companies', 'estates', 'equipment', 'collectibles', 'investments']) $(key).textContent = money(overview[key]);
     $('companyCount').textContent = `持有 ${(state.companies || []).length} 家公司`;
     $('estateCount').textContent = `持有 ${(state.estates || []).length} 块地产`;
-    $('status').textContent = '资产随账本实时更新，所有金额均为本地虚拟资产。';
+    $('status').textContent = '';
   } catch (error) { $('status').textContent = `${error.message}，请重新加载扩展后再试。`; }
 }
 chrome.storage.onChanged.addListener((changes, area) => { if (area === 'local' && changes.assetMeterState) refresh(); });

@@ -69,6 +69,12 @@
     send("DWELL_TICK");
   }, 5000);
 
+  chrome.runtime.onMessage.addListener((message, sender, respond) => {
+    if (message?.type === "GET_DWELL") {
+      respond({ dwellMs: currentDwell(), visible: document.visibilityState === "visible" });
+    }
+  });
+
   // Initial ping
   send("DWELL_TICK", { boot: true });
 })();

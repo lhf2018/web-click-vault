@@ -30,7 +30,7 @@ async function transact(message, confirmation) {
   finally { busy = false; render(); }
 }
 function render() {
-  $('balance').textContent = money(walletBalance(state));
+  $('balance').textContent = money(page === 'investments' ? investmentValue(state) : exchangeAssets(state).reduce((sum, asset) => sum + asset.price, 0));
   $('cards').replaceChildren(); $('activity').replaceChildren(); $('highlight').replaceChildren(); $('highlight').hidden = true;
   if (page === 'exchange') renderExchange();
   if (page === 'investments') renderInvestments();
@@ -76,7 +76,7 @@ function sharePicker(label, key, max) {
 function renderInvestments() {
   const now = Date.now(), investments = state.investments || [], catalog = investmentCatalog(now);
   const signed = n => `${n >= 0 ? '+' : '−'}${money(Math.abs(n))}`;
-  $('metricLabel').textContent = '持仓市值'; $('metric').textContent = money(investmentValue(state, now)); $('metricHint').textContent = '按当前行情计入总资产 · 盈亏随价格变化';
+  $('metricLabel').textContent = '累计投资'; $('metric').textContent = money(state.investmentSpent); $('metricHint').textContent = '';
   $('sectionTitle').textContent = '独立项目行情'; $('activityTitle').textContent = '我的持仓与交易';
   $('highlight').hidden = false;
   $('highlight').append(el('h2', '按份额投资 · 支持加仓与部分卖出'), el('p', `20 个常驻项目，4 个当期项目，含 4 个大型项目。下次上新：${new Date(catalog.nextRefresh).toLocaleDateString('zh-CN')}。过期项目停止买入，持仓继续计价并可随时卖出。`), el('p', '买入填写整数份数，可追加同一持仓，最多持有 10 个不同项目。行情每小时独立更新；卖出收取 1% 手续费，成交以当时行情为准。'));

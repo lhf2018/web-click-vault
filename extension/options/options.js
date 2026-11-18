@@ -1,3 +1,7 @@
+function escapeText(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+}
+
 function money(n) {
   return `¥${(Number(n) || 0).toFixed(2)}`;
 }
@@ -51,14 +55,14 @@ function renderFormula(state) {
   panel.innerHTML = `
     <div class="formula-top">
       <strong>+${money(f.amount)}</strong>
-      <span>${f.host || ""} · Score ${Number(f.score || 0).toFixed(3)} · Noise ${(((f.noise || 0) * 100)).toFixed(1)}%</span>
+      <span>${escapeText(f.host)} · Score ${Number(f.score || 0).toFixed(3)} · Noise ${(((f.noise || 0) * 100)).toFixed(1)}%</span>
     </div>
     <div class="score-rows">
       ${rows
         .map(
           ([label, score, weight]) => `
         <div class="score-row">
-          <span>${label} ×${weight ?? "-"}</span>
+          <span>${label} ×${Number(weight) || "-"}</span>
           <div class="bar"><i style="width:${Math.max(4, (score || 0) * 100)}%"></i></div>
           <em>${pct(score)}</em>
         </div>`
@@ -66,11 +70,11 @@ function renderFormula(state) {
         .join("")}
     </div>
     <p class="formula-meta">
-      ${f.reason || ""}<br />
-      ${(f.extras || []).map(effect => `${effect.name}：额外 +${Math.round(effect.bonus*100)}%`).join(" · ")}<br />
-      ${f.multiplier > 1 ? `基础入账 ${money(f.baseAmount)} × 商店倍率 ${f.multiplier}<br />` : ""}
+      ${escapeText(f.reason)}<br />
+      ${(f.extras || []).map(effect => `${escapeText(effect.name)}：额外 +${Math.round(effect.bonus*100)}%`).join(" · ")}<br />
+      ${f.multiplier > 1 ? `基础入账 ${money(f.baseAmount)} × 商店倍率 ${Number(f.multiplier)}<br />` : ""}
       停留 ${Math.round((f.dwellMs || 0) / 1000)}s · 加载 ${Math.round(f.loadMs || 0)}ms ·
-      新鲜度 ${f.freshKind || "-"} · 来源 ${f.dwellSource === "probe" ? "可见性探针" : "标签估算"}
+      新鲜度 ${escapeText(f.freshKind || "-")} · 来源 ${f.dwellSource === "probe" ? "可见性探针" : "标签估算"}
     </p>
   `;
 }
@@ -149,3 +153,45 @@ document.getElementById("resetAll").addEventListener("click", async () => {
 });
 
 refresh();
+
+const backupHint = document.getElementById('backupHint');
+const exportButton = document.getElementById('exportData');
+const importButton = document.getElementById('importData');
+const importFile = document.getElementById('importFile');
+exportButton.addEventListener('click', async () => {
+  exportButton.disabled = true;
+  try {
+    const res = await request('EXPORT_BACKUP');
+    if (!res?.ok || !res.backup) throw new Error(res?.error || '导出失败');
+    const url = URL.createObjectURL(new Blob([JSON.stringify(res.backup, null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    const date = new Date();
+    const day = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    link.download = `网页资产计-${day}.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    backupHint.textContent = '备份已导出';
+  } catch (error) { backupHint.textContent = error.message; }
+  finally { exportButton.disabled = false; }
+});
+importButton.addEventListener('click', () => importFile.click());
+importFile.addEventListener('change', async () => {
+  const file = importFile.files?.[0];
+  if (!file) return;
+  importButton.disabled = true;
+  try {
+    if (file.size > 10 * 1024 * 1024) throw new Error('备份不能超过 10 MB');
+    let backup;
+    try { backup = JSON.parse(await file.text()); } catch { throw new Error('无法读取备份文件'); }
+    if (backup?.format !== 'web-click-vault' || backup.version !== 1 || !backup.state) throw new Error('不是有效的账本备份');
+    if (!confirm('导入将覆盖当前账本，并清除正在计时的会话。继续？')) return;
+    await saveQueue;
+    ++settingsRevision;
+    const res = await request('IMPORT_BACKUP', { backup });
+    if (!res?.ok) throw new Error(res?.error || '导入失败');
+    fill(res.state, res.week);
+    backupHint.textContent = '账本已导入';
+  } catch (error) { backupHint.textContent = error.message; }
+  finally { importButton.disabled = false; importFile.value = ''; }
+});

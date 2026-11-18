@@ -1,3 +1,4 @@
+import { assetOverview } from '../core/overview.js';
 import { COMPANY_TYPES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_FACILITIES } from '../core/company.js';
 import { walletBalance } from '../core/shop.js';
 import { companyBrief } from '../core/journey.js';
@@ -22,7 +23,7 @@ async function request(message) {
 function el(tag, cls, text) { const node = document.createElement(tag); node.className = cls; node.textContent = text; return node; }
 function render() {
   const companies = state.companies || [];
-  $('balance').textContent = money(walletBalance(state));
+  $('balance').textContent = money(assetOverview(state).companies);
   $('count').textContent = companies.length;
   $('completed').textContent = companies.reduce((sum, company) => sum + company.completed, 0);
   $('income').textContent = money(companies.reduce((sum, company) => sum + company.income - (company.losses || 0), 0));

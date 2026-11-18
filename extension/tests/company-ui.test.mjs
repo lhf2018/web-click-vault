@@ -1,3 +1,4 @@
+import { assetOverview } from '../core/overview.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -15,7 +16,7 @@ function setup(sendMessage) {
     addEventListener(event, fn) { this[event] = fn; }, setAttribute() {}, focus() { this.focused = true; } }; }
   const get = id => { if (!nodes.has(id)) nodes.set(id, node()); return nodes.get(id); };
   get('companyType').value = 'publisher'; get('status').textContent = '正在读取账本…';
-  vm.runInNewContext(source, { companyBrief, COMPANY_TYPES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_FACILITIES, walletBalance,
+  vm.runInNewContext(source, { assetOverview, companyBrief, COMPANY_TYPES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_FACILITIES, walletBalance,
     document: { getElementById: get, createElement: node }, Option: function(text, value) { return { text, value }; },
     chrome: { runtime: { sendMessage }, storage: { onChanged: { addListener() {} } } },
     window: { addEventListener() {}, confirm: () => true }, setTimeout, clearTimeout });
@@ -120,4 +121,14 @@ test('merged company cards show old orders and work stories without rewriting le
   const html = await readFile(new URL('../company/index.html', import.meta.url), 'utf8');
   assert.ok(html.includes('正在发生的生意'));
   assert.equal(html.includes('../journey/journey.js'), false);
+});
+
+test('company headline shows its valuation independently of shared purchase cash', async () => {
+  const state = createCompany(funded(), '估值测试', 'publisher');
+  state.companies[0].completed = 5;
+  const ui = setup(async () => response(state));
+  await flush();
+  assert.equal(ui.get('balance').textContent, '¥1,250.00');
+  assert.equal(walletBalance(state), 9000);
+  assert.equal(ui.get('createButton').disabled, false);
 });

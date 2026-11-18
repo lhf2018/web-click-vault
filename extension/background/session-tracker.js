@@ -7,6 +7,7 @@ import { buildScores } from "../core/metrics.js";
 import { hostKey, pageTypeScore } from "../core/url.js";
 import { shouldCountVisit, pruneRecentVisitMap } from "./navigation-guard.js";
 import {
+  importBackup,
   loadSessions,
   loadState,
   saveSessions,
@@ -71,18 +72,22 @@ function flushVisible(session, now = Date.now()) {
  * @param {number} dwellMs
  * @param {boolean} [visible]
  */
-export async function applyDwellFromProbe(tabId, dwellMs, visible = true, pageElements = null, pageUrl = null) {
+async function applyDwellFromProbeImpl(tabId, dwellMs, visible = true, pageElements = null, pageUrl = null) {
   const sessions = await loadSessions();
   const key = String(tabId);
   const session = sessions[key];
   if (!session || session.settled) return null;
 
-  const capped = Math.min(DWELL_CAP_MS, Math.max(0, Number(dwellMs) || 0));
+  const total = Math.max(0, Number(dwellMs) || 0);
+  if (total < (session.probeBaseline || 0)) return null;
+  const capped = Math.min(DWELL_CAP_MS, total - (session.probeBaseline || 0));
   sessions[key] = {
     ...session,
     dwellAccumMs: Math.max(session.dwellAccumMs || 0, capped),
     pageElements: pageElements && canonicalizeUrl(pageUrl) === session.url ? cleanPageElements(pageElements) : session.pageElements,
     dwellSource: "probe",
+    probeTotalMs: total,
+    probeVisible: visible,
     // Keep tab timer off when probe owns dwell.
     visibleSince: visible ? session.visibleSince || Date.now() : null,
     lastProbeAt: Date.now(),
@@ -90,12 +95,12 @@ export async function applyDwellFromProbe(tabId, dwellMs, visible = true, pageEl
   await saveSessions(sessions);
 
   if (capped >= DWELL_CAP_MS) {
-    return settleSession(tabId);
+    return settleSessionImpl(tabId);
   }
   return sessions[key];
 }
 
-export async function beginSession(tabId, url, committedAt) {
+async function beginSessionImpl(tabId, url, committedAt) {
   const state = await loadState();
   const gate = shouldCountVisit(url, state.recentVisitMap);
   if (!gate.ok) return null;
@@ -132,7 +137,7 @@ export async function beginSession(tabId, url, committedAt) {
   return session;
 }
 
-export async function markCommitted(tabId, url, timeMs) {
+async function markCommittedImpl(tabId, url, timeMs) {
   const pending = await loadPendingCommits();
   pending[String(tabId)] = {
     url,
@@ -141,7 +146,7 @@ export async function markCommitted(tabId, url, timeMs) {
   await savePendingCommits(pending);
 }
 
-export async function onTabActivated(tabId) {
+async function onTabActivatedImpl(tabId) {
   const now = Date.now();
   const sessions = await loadSessions();
 
@@ -162,7 +167,7 @@ export async function onTabActivated(tabId) {
   await saveSessions(sessions);
 }
 
-export async function onWindowFocusChanged(windowId) {
+async function onWindowFocusChangedImpl(windowId) {
   if (windowId === chrome.windows.WINDOW_ID_NONE) {
     if (activeTabId == null) return;
     const sessions = await loadSessions();
@@ -175,7 +180,7 @@ export async function onWindowFocusChanged(windowId) {
   }
   try {
     const [tab] = await chrome.tabs.query({ active: true, windowId });
-    if (tab?.id != null) await onTabActivated(tab.id);
+    if (tab?.id != null) await onTabActivatedImpl(tab.id);
   } catch {
     // ignore
   }
@@ -186,7 +191,7 @@ export async function onWindowFocusChanged(windowId) {
  * @param {object} session
  * @param {{ removeTabId?: number|null }} [opts]
  */
-export async function settleSessionData(session, opts = {}) {
+async function settleSessionDataImpl(session, opts = {}) {
   if (!session || session.settled || !session.url) return null;
 
   const now = Date.now();
@@ -295,11 +300,11 @@ export async function settleSessionData(session, opts = {}) {
     await removeSession(opts.removeTabId);
   }
 
-  await refreshBadge();
+  await refreshBadgeImpl();
   return result;
 }
 
-export async function settleSession(tabId, opts = {}) {
+async function settleSessionImpl(tabId, opts = {}) {
   const sessions = await loadSessions();
   const key = String(tabId);
   let session = sessions[key];
@@ -308,39 +313,41 @@ export async function settleSession(tabId, opts = {}) {
     return null;
   }
   if (opts.forceUrl) session = { ...session, url: opts.forceUrl };
-  return settleSessionData(session, { removeTabId: tabId });
+  return settleSessionDataImpl(session, { removeTabId: tabId });
 }
 
 /**
  * Full document navigation (not SPA history).
  */
-export async function onNavigationCompleted(details) {
+async function onNavigationCompletedImpl(details) {
   if (details.frameId !== 0) return;
   const tabId = details.tabId;
   if (tabId < 0) return;
 
-  // Skip pure history / SPA updates — those go through onHistoryStateUpdated when enabled.
+  // Skip pure history / SPA updates — those go through onHistoryStateUpdatedImpl when enabled.
   const tt = details.transitionType;
   if (tt === "auto_subframe" || tt === "manual_subframe") return;
 
   const sessions = await loadSessions();
   const existing = sessions[String(tabId)];
   if (existing && !existing.settled && existing.url) {
-    await settleSession(tabId);
+    await settleSessionImpl(tabId);
   }
 
-  await beginSession(tabId, details.url);
+  await beginSessionImpl(tabId, details.url);
 }
 
 /**
  * Optional SPA / pushState counting. Off by default per PRD「宁可少算」.
  */
-export async function onHistoryStateUpdated(details) {
+async function onHistoryStateUpdatedImpl(details) {
   if (details.frameId !== 0 || details.tabId < 0) return;
   const state = await loadState();
   if (!state.settings?.countSpaNavigations) return;
 
   const tabId = details.tabId;
+  let probe = null;
+  try { probe = await chrome.tabs.sendMessage(tabId, { type: "GET_DWELL" }); } catch {}
   const sessions = await loadSessions();
   const existing = sessions[String(tabId)];
   if (existing && !existing.settled && existing.url) {
@@ -352,20 +359,28 @@ export async function onHistoryStateUpdated(details) {
     } catch {
       // continue
     }
-    await settleSession(tabId);
+    if (Number.isFinite(probe?.dwellMs)) {
+      await applyDwellFromProbeImpl(tabId, probe.dwellMs, probe.visible);
+    }
+    await settleSessionImpl(tabId);
   }
-  await beginSession(tabId, details.url, Date.now() - 400);
+  const next = await beginSessionImpl(tabId, details.url, Date.now() - 400);
+  if (next) {
+    const baseline = Number.isFinite(probe?.dwellMs) ? probe.dwellMs
+      : (existing?.probeTotalMs || 0) + (existing?.probeVisible ? Math.max(0, Date.now() - existing.lastProbeAt) : 0);
+    await patchSession(tabId, { probeBaseline: baseline });
+  }
 }
 
-export async function onTabRemoved(tabId) {
-  await settleSession(tabId);
+async function onTabRemovedImpl(tabId) {
+  await settleSessionImpl(tabId);
   if (activeTabId === tabId) activeTabId = null;
 }
 
 /**
  * Find sessions whose tabs are gone; queue for recovery UI instead of silently dropping.
  */
-export async function scanOrphanSessions() {
+async function scanOrphanSessionsImpl() {
   // Also drain records saved by an earlier extension run, even if no new orphans exist.
   await maybeAutoSettleRecoveries();
   const sessions = await loadSessions();
@@ -422,12 +437,12 @@ export async function scanOrphanSessions() {
 async function maybeAutoSettleRecoveries() {
   const state = await loadState();
   if (state.settings?.autoSettleRecoveries && state.pendingRecoveries?.length) {
-    return settleRecoveries();
+    return settleRecoveriesImpl();
   }
   return state;
 }
 
-export async function settleRecoveries() {
+async function settleRecoveriesImpl() {
   let list = [];
   await updateState((state) => {
     list = [...(state.pendingRecoveries || [])];
@@ -435,19 +450,19 @@ export async function settleRecoveries() {
   });
 
   for (const item of list) {
-    await settleSessionData(item, { removeTabId: null });
+    await settleSessionDataImpl(item, { removeTabId: null });
   }
   return loadState();
 }
 
-export async function discardRecoveries() {
+async function discardRecoveriesImpl() {
   return updateState((state) => ({
     ...state,
     pendingRecoveries: [],
   }));
 }
 
-export async function refreshBadge() {
+async function refreshBadgeImpl() {
   try {
     const state = await loadState();
     const text =
@@ -466,7 +481,7 @@ export async function refreshBadge() {
 /**
  * Snapshot of the active tab's in-progress session for Popup status.
  */
-export async function getActiveSessionSnapshot() {
+async function getActiveSessionSnapshotImpl() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
     if (!tab?.id || !tab.url) return null;
@@ -499,28 +514,29 @@ export async function getActiveSessionSnapshot() {
   }
 }
 
-export async function initActiveTab() {
-  await scanOrphanSessions();
+async function initActiveTabImpl() {
+  await scanOrphanSessionsImpl();
   try {
     const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
     if (tab?.id != null) {
       activeTabId = tab.id;
-      await onTabActivated(tab.id);
+      await onTabActivatedImpl(tab.id);
     }
   } catch {
     // ignore
   }
-  await refreshBadge();
+  await refreshBadgeImpl();
 }
 
-export async function settleIfDwellCapped() {
+async function settleIfDwellCappedImpl() {
   const sessions = await loadSessions();
   const now = Date.now();
   for (const [key, session] of Object.entries(sessions)) {
     if (!session || session.settled) continue;
     const flushed = flushVisible(session, now);
     if ((flushed.dwellAccumMs || 0) >= DWELL_CAP_MS) {
-      await settleSession(Number(key));
+      await settleSessionImpl(Number(key));
+      delete sessions[key];
     } else {
       sessions[key] = flushed;
       if (activeTabId === Number(key) && flushed.dwellSource !== "probe") {
@@ -531,11 +547,11 @@ export async function settleIfDwellCapped() {
   await saveSessions(sessions);
 }
 
-export async function dismissAchievement() {
+async function dismissAchievementImpl() {
   return updateState((state) => ({ ...state, pendingAchievement: null }));
 }
 
-export async function updateSettings(patch) {
+async function updateSettingsImpl(patch) {
   await updateState((state) => ({
     ...state,
     settings: {
@@ -545,3 +561,31 @@ export async function updateSettings(patch) {
   }));
   return maybeAutoSettleRecoveries();
 }
+
+let sessionQueue = Promise.resolve();
+function enqueueSession(operation) {
+  const result = sessionQueue.then(operation);
+  sessionQueue = result.catch(() => {});
+  return result;
+}
+export function applyDwellFromProbe(...args) { return enqueueSession(() => applyDwellFromProbeImpl(...args)); }
+export function beginSession(...args) { return enqueueSession(() => beginSessionImpl(...args)); }
+export function markCommitted(...args) { return enqueueSession(() => markCommittedImpl(...args)); }
+export function onTabActivated(...args) { return enqueueSession(() => onTabActivatedImpl(...args)); }
+export function onWindowFocusChanged(...args) { return enqueueSession(() => onWindowFocusChangedImpl(...args)); }
+export function settleSessionData(...args) { return enqueueSession(() => settleSessionDataImpl(...args)); }
+export function settleSession(...args) { return enqueueSession(() => settleSessionImpl(...args)); }
+export function onNavigationCompleted(...args) { return enqueueSession(() => onNavigationCompletedImpl(...args)); }
+export function onHistoryStateUpdated(...args) { return enqueueSession(() => onHistoryStateUpdatedImpl(...args)); }
+export function onTabRemoved(...args) { return enqueueSession(() => onTabRemovedImpl(...args)); }
+export function scanOrphanSessions(...args) { return enqueueSession(() => scanOrphanSessionsImpl(...args)); }
+export function settleRecoveries(...args) { return enqueueSession(() => settleRecoveriesImpl(...args)); }
+export function discardRecoveries(...args) { return enqueueSession(() => discardRecoveriesImpl(...args)); }
+export function refreshBadge(...args) { return enqueueSession(() => refreshBadgeImpl(...args)); }
+export function getActiveSessionSnapshot(...args) { return enqueueSession(() => getActiveSessionSnapshotImpl(...args)); }
+export function initActiveTab(...args) { return enqueueSession(() => initActiveTabImpl(...args)); }
+export function settleIfDwellCapped(...args) { return enqueueSession(() => settleIfDwellCappedImpl(...args)); }
+export function dismissAchievement(...args) { return enqueueSession(() => dismissAchievementImpl(...args)); }
+export function updateSettings(...args) { return enqueueSession(() => updateSettingsImpl(...args)); }
+
+export function restoreBackup(backup) { return enqueueSession(() => importBackup(backup)); }
