@@ -12,10 +12,22 @@ const tracks = [
   ['equipment', '装备成长', '级持有装备总等级', [1, 5, 15, 30, 60], ['整装出发', '工具齐备', '进阶行囊', '装备工坊', '满载远行']],
   ['trades', '项目投资', '笔已卖出投资', [1, 5, 15, 40, 100], ['第一笔成交', '市场观察员', '行情笔记', '投资历练', '百次决策']],
 ];
+const REWARDS = {
+  visits: ['browse', '浏览收益'], deepReads: ['deep', '深读收益（≥60秒）'],
+  activeDays: ['browse', '浏览收益'], sites: ['new_host', '当日首次探索网站收益'],
+  earnings: ['browse', '浏览收益'], collectibles: ['drop', '藏品发现概率'],
+  estates: ['estate', '地产经营收入'], orders: ['company', '公司订单净收益'],
+  equipment: ['focus', '专注浏览收益（≥15秒）'], trades: ['new_path', '当日探索新路径收益'],
+};
+function rewardFor(metric, tier) {
+  const [kind, label] = REWARDS[metric];
+  const bonus = kind === 'drop' ? (tier + 1) / 1000 : (tier + 1) / 100;
+  return { kind, bonus, label: `${label} +${Number((bonus * 100).toFixed(1))}${kind === 'drop' ? ' 个百分点' : '%'}` };
+}
 export const ACHIEVEMENT_CATALOG = [
-  ...ACHIEVEMENTS.map(a => ({ ...a, category: '财富积累', metric: 'earnings', requirement: `累计收益达到 ¥${a.threshold.toLocaleString('zh-CN')}` })),
+  ...ACHIEVEMENTS.map(a => ({ ...a, category: '财富积累', metric: 'earnings', reward: rewardFor('earnings', 0), requirement: `累计收益达到 ¥${a.threshold.toLocaleString('zh-CN')}` })),
   ...tracks.flatMap(([metric, category, unit, thresholds, titles]) => thresholds.map((threshold, index) => ({
-    id: `milestone_${metric}_${threshold}`, title: titles[index], category, metric, threshold,
+    id: `milestone_${metric}_${threshold}`, title: titles[index], category, metric, threshold, reward: rewardFor(metric, index),
     requirement: metric === 'earnings' ? `累计收益达到 ¥${threshold.toLocaleString('zh-CN')}` : `达到 ${threshold} ${unit}`,
   }))),
 ];
@@ -58,4 +70,24 @@ export function recordAchievementVisit(state, entry, day) {
     lastActiveDay: day,
     hosts: host && !hosts.includes(host) && hosts.length < 1000 ? [...hosts, host] : hosts,
   } };
+}
+
+export function achievementBonuses(state) {
+  const earned = new Set(state.unlockedAchievements || []);
+  const bonuses = { browse: 0, deep: 0, new_host: 0, new_path: 0, focus: 0, estate: 0, company: 0, drop: 0 };
+  for (const item of ACHIEVEMENT_CATALOG) {
+    if (earned.has(item.id)) bonuses[item.reward.kind] += item.reward.bonus;
+  }
+  for (const key of Object.keys(bonuses)) bonuses[key] = Math.round(bonuses[key] * 10000) / 10000;
+  return bonuses;
+}
+export function achievementBrowsingEffects(state, metrics = {}) {
+  const bonus = achievementBonuses(state);
+  return [
+    ['browse', '成就 · 浏览', true], ['deep', '成就 · 深读', metrics.dwellMs >= 60000],
+    ['focus', '成就 · 专注', metrics.dwellMs >= 15000],
+    ['new_host', '成就 · 网站探索', metrics.freshKind === 'first_host'],
+    ['new_path', '成就 · 新路径', metrics.freshKind === 'new_path'],
+  ].filter(([key, , matches]) => matches && bonus[key] > 0)
+    .map(([key, name]) => ({ id: `achievement_${key}`, name, bonus: bonus[key] }));
 }

@@ -1,3 +1,4 @@
+import { achievementBonuses } from '../core/achievements.js';
 import { assetOverview } from '../core/overview.js';
 import { COMPANY_TYPES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_FACILITIES } from '../core/company.js';
 import { walletBalance } from '../core/shop.js';
@@ -6,7 +7,7 @@ const $ = id => document.getElementById(id);
 const money = n => `¥${(n || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 let buildingReady = false;
 let state, busy = false, revision = 0, backendReady = false;
-const reloadHint = '公司后台尚未更新。请到 chrome://extensions 重新加载「网页资产计」，再关闭并重新打开公司页面；不要卸载扩展。';
+const reloadHint = '公司后台尚未更新。请到 chrome://extensions 重新加载「网页轻度经营」，再关闭并重新打开公司页面；不要卸载扩展。';
 function feedback(message) {
   $('status').textContent = message;
   $('createFeedback').textContent = message;
@@ -41,9 +42,10 @@ function render() {
       el('p', 'company-meta', `总部：${company.headquarters || '线上办公室'}`),
       el('h4', 'company-order', order.title),
       el('span', 'company-client', `委托方 · ${brief.client}`), el('p', 'company-story', brief.story),
-      el('p', 'company-meta', `${order.seen.length} / ${order.target} ${type.unit} · 交付净收益 ${money(order.reward)}${order.mode === 'risk' ? ' / 10% 概率亏损 ¥20' : ''}`));
+      el('p', 'company-meta', `${order.seen.length} / ${order.target} ${type.unit} · 交付净收益 ${money(Math.round(order.reward * (1 + achievementBonuses(state).company) * 100) / 100)}${order.mode === 'risk' ? ' / 10% 概率亏损 ¥20' : ''}`));
     const progress = document.createElement('progress'); progress.max = order.target; progress.value = order.seen.length;
     progress.setAttribute('aria-label', `${company.name}当前订单进度`); body.append(progress);
+    if (achievementBonuses(state).company) body.append(el('p', 'company-meta', `成就加成 +${Math.round(achievementBonuses(state).company * 100)}%`));
     if (order.gross != null) body.append(el('p', 'company-meta', `合同 ${money(order.gross)} − 制作 ${money(order.cost)} − 薪酬 ${money(order.salary)}`));
     body.append(el('p', 'special-effect', companyLevel(company) < 5 ? `再完成 ${5 - company.completed % 5} 单，自动升至 Lv.${companyLevel(company) + 1}` : '已达最高等级 · 持续自动接单'));
     renderManagement(body, company);
@@ -54,6 +56,7 @@ function render() {
       const entry = el('li', '', ''), story = companyBrief(company, project);
       entry.append(el('strong', 'company-work-title', project.title),
         el('p', 'company-meta', `${project.amount < 0 ? '−' : '+'}${money(Math.abs(project.amount))}${project.outcome ? ` · ${project.outcome}` : ''} · ${new Date(project.ts).toLocaleString('zh-CN')}`),
+        ...(project.achievementBonus > 0 ? [el('p', 'company-meta', `成就奖励 +${money(project.achievementBonus)}`)] : []),
         el('span', 'company-client', `故事委托方 · ${story.client}`), el('p', 'company-story', story.story));
       list.append(entry);
     }

@@ -34,9 +34,10 @@ function renderAchievements() {
     art.append(emblem, node('span', a.unlocked ? 'MILESTONE ACHIEVED' : 'THE JOURNEY CONTINUES', 'achievement-inscription'));
     const body = node('div', null, 'achievement-body');
     body.append(node('h3', a.title), node('p', a.requirement));
+    if (a.reward) body.append(node('p', `${a.unlocked ? '已生效' : '解锁奖励'} · ${a.reward.label}`, 'achievement-reward'));
     const progress = node('progress'); progress.max = 1; progress.value = a.progress; progress.setAttribute('aria-label', `${a.title}进度`);
     const hint = a.equipment ? (a.unlocked ? '已解锁 · 可前往增长商店选购' : `解锁进度 ${Math.round(a.progress * 100)}%`)
-      : a.unlocked ? '已解锁 · 永久纪念' : `${Math.min(a.current, a.threshold).toLocaleString('zh-CN')} / ${a.threshold.toLocaleString('zh-CN')}`;
+      : a.unlocked ? '已解锁 · 永久生效' : `${Math.min(a.current, a.threshold).toLocaleString('zh-CN')} / ${a.threshold.toLocaleString('zh-CN')}`;
     const footer = node('div', null, 'achievement-footer');
     const caption = node('div', null, 'achievement-progress-caption');
     caption.append(node('span', a.unlocked ? '旅程已留印' : '达成进度'), node('span', `${Math.round(a.progress * 100)}%`));

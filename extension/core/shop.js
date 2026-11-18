@@ -1,3 +1,4 @@
+import { achievementBrowsingEffects } from './achievements.js';
 // Permanent upgrades purchased with locally earned virtual currency.
 export const SHOP_CATEGORIES = [
   { id: "all", name: "全部商品" },
@@ -49,6 +50,7 @@ export function effectMatches(item, metrics = {}) {
 export function depositMultiplier(state, metrics = {}) {
   const extras = SHOP_ITEMS.filter(item => effectMatches(item, metrics) && itemLevel(state,item)>0)
     .map(item => ({ id: item.id, name: item.name, bonus: Math.round(itemLevel(state,item)*item.extra*100)/100 }));
+  extras.push(...achievementBrowsingEffects(state, metrics));
   return { multiplier: Math.round((incomeMultiplier(state)+extras.reduce((sum,item)=>sum+item.bonus,0))*100)/100, extras };
 }
 

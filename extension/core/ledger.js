@@ -131,7 +131,7 @@ export function applyDeposit(state, entry, formulaDetail = null) {
   entry = {
     ...entry,
     amount: round2(baseAmount * multiplier),
-    reason: multiplier > 1 ? `${entry.reason || "浏览入账"} · 商店加成 ×${multiplier}${effectReason}` : entry.reason,
+    reason: multiplier > 1 ? `${entry.reason || "浏览入账"} · 收益加成 ×${multiplier}${effectReason}` : entry.reason,
   };
   if (formulaDetail) formulaDetail = { ...formulaDetail, baseAmount, multiplier, extras, amount: entry.amount, reason: entry.reason };
   const before = next.totalAsset;

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light" />
   <meta name="theme-color" content="#e8eeea" />
-  <title>网页资产计 · 技术方案</title>
+  <title>网页轻度经营 · 技术方案</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
@@ -502,7 +502,7 @@
       <main class="main">
         <section id="current-runtime" class="section">
           <div class="eyebrow">Implemented Architecture · 0.9.0 / schema 6 · 2026-11-18</div>
-          <h1>网页资产计 · 当前技术实现</h1>
+          <h1>网页轻度经营 · 当前技术实现</h1>
           <p>使用 Chrome Manifest V3、原生 JavaScript 模块、HTML 和 CSS，无构建依赖。当前实现以 <code>extension/</code> 为准；下方折叠区是早期技术草案，包含尚未采用的 TypeScript 路径和历史范围，不作为当前接口说明。</p>
           <table><thead><tr><th>模块</th><th>职责</th></tr></thead><tbody>
             <tr><td><code>background/service-worker.js</code></td><td>导航、会话、恢复及消息编排；校验扩展页面交易来源。</td></tr>
@@ -547,7 +547,7 @@ node scripts/preview-server.mjs</pre>
           <summary>展开早期技术方案 v0.1 存档（历史设想，以前述当前实现为准）</summary>
         <section class="hero">
           <div class="eyebrow">Technical Design · v0.1</div>
-          <h1>网页资产计<br />本地实现方案</h1>
+          <h1>网页轻度经营<br />本地实现方案</h1>
           <p>
             以 Chrome Manifest V3 扩展为载体：在 Service Worker 中编排导航事件，在内容侧与性能 API 采集四项指标，
             用纯函数公式引擎结算单笔 ≤ ¥10 的入账，全部写入本地 storage，Popup 以账本摘要呈现。
@@ -840,7 +840,7 @@ type AppState = {
             <div class="content-block">
               <h3>Popup 结构</h3>
               <ul>
-                <li>头部品牌：网页资产计</li>
+                <li>头部品牌：网页轻度经营</li>
                 <li>今日打开数 + 今日入账（大数字）</li>
                 <li>累计资产 + 距下一成就差额</li>
                 <li>最近一笔：+¥x.xx 与 reason</li>

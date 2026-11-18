@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import { collectionMarket, marketQuote, sellAtMarket } from '../core/market.js';
 import { readFile } from 'node:fs/promises';
 import { defaultState, applyDeposit } from '../core/ledger.js';
-import { recordCollectibleVisit as recordVisit, explorationLevel, collectiblePrice, sellCollectible, collectibleValue, cleanPageElements, collectibleIdentity, COLLECTION_TYPES } from '../core/collectibles.js';
+import { collectibleDropRate, recordCollectibleVisit as recordVisit, explorationLevel, collectiblePrice, sellCollectible, collectibleValue, cleanPageElements, collectibleIdentity, COLLECTION_TYPES } from '../core/collectibles.js';
 import { assetOverview } from '../core/overview.js';
 import { walletBalance } from '../core/shop.js';
 const recordCollectibleVisit = (state, entry, random = () => 0) => recordVisit(state, entry, random);
@@ -124,7 +124,7 @@ test('collection UI displays untrusted titles as text and sale/filter actions up
   const get = id => { if (!nodes.has(id)) nodes.set(id, node()); return nodes.get(id); };
   get('filter').value = 'owned';
   let state = recordCollectibleVisit(defaultState(), visit());
-  vm.runInNewContext(source, { COLLECTION_TYPES, collectibleValue, explorationLevel, collectiblePrice, collectionMarket, marketQuote, collectibleIdentity, URL, document: { getElementById: get, createElement: node },
+  vm.runInNewContext(source, { collectibleDropRate, COLLECTION_TYPES, collectibleValue, explorationLevel, collectiblePrice, collectionMarket, marketQuote, collectibleIdentity, URL, document: { getElementById: get, createElement: node },
     chrome: { runtime: { sendMessage: async message => { if (message.type === 'MARKET_SELL') state = sellAtMarket(state, message.id, message.mode, message.week, message.price); return { ok: true, state }; } }, storage: { onChanged: { addListener() {} } } },
     window: { confirm: () => true, addEventListener() {} } });
   await new Promise(resolve => setImmediate(resolve));
@@ -173,7 +173,7 @@ test('bookmark and chip exhibit shapes reflect condition without changing stored
   const node = () => ({ children: [], value: '', style: { setProperty() {} }, append(...kids) { this.children.push(...kids); }, replaceChildren(...kids) { this.children = kids; }, addEventListener() {} });
   const get = id => { if (!nodes.has(id)) nodes.set(id, node()); return nodes.get(id); };
   get('filter').value = 'owned';
-  vm.runInNewContext(source, { COLLECTION_TYPES, collectibleValue, explorationLevel, collectiblePrice, collectionMarket, marketQuote, collectibleIdentity, URL,
+  vm.runInNewContext(source, { collectibleDropRate, COLLECTION_TYPES, collectibleValue, explorationLevel, collectiblePrice, collectionMarket, marketQuote, collectibleIdentity, URL,
     document: { getElementById: get, createElement: node }, chrome: { runtime: { sendMessage: async () => ({ ok: true, state }) }, storage: { onChanged: { addListener() {} } } }, window: { addEventListener() {} } });
   await new Promise(resolve => setImmediate(resolve));
   const cards = get('wall').children;
@@ -193,7 +193,7 @@ test('collection wall combines item price, history and limited commission with p
   const node = () => ({ children: [], value: '', style: { setProperty() {} }, append(...kids) { this.children.push(...kids); }, replaceChildren(...kids) { this.children = kids; }, addEventListener(name, fn) { this[name] = fn; } });
   const get = id => { if (!nodes.has(id)) nodes.set(id, node()); return nodes.get(id); };
   get('filter').value = 'owned';
-  vm.runInNewContext(source, { COLLECTION_TYPES, collectibleValue, explorationLevel, collectiblePrice, collectionMarket, marketQuote, collectibleIdentity, URL,
+  vm.runInNewContext(source, { collectibleDropRate, COLLECTION_TYPES, collectibleValue, explorationLevel, collectiblePrice, collectionMarket, marketQuote, collectibleIdentity, URL,
     document: { getElementById: get, createElement: node }, chrome: { runtime: { sendMessage: async m => {
       if (m.type === 'MARKET_SELL') state = sellAtMarket(state, m.id, m.mode, m.week, m.price);
       return { ok: true, state };

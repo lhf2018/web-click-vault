@@ -1,3 +1,4 @@
+import { achievementBonuses } from '../core/achievements.js';
 import { assetOverview } from '../core/overview.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -16,7 +17,7 @@ function setup(sendMessage) {
     addEventListener(event, fn) { this[event] = fn; }, setAttribute() {}, focus() { this.focused = true; } }; }
   const get = id => { if (!nodes.has(id)) nodes.set(id, node()); return nodes.get(id); };
   get('companyType').value = 'publisher'; get('status').textContent = '正在读取账本…';
-  vm.runInNewContext(source, { assetOverview, companyBrief, COMPANY_TYPES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_FACILITIES, walletBalance,
+  vm.runInNewContext(source, { achievementBonuses, assetOverview, companyBrief, COMPANY_TYPES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_FACILITIES, walletBalance,
     document: { getElementById: get, createElement: node }, Option: function(text, value) { return { text, value }; },
     chrome: { runtime: { sendMessage }, storage: { onChanged: { addListener() {} } } },
     window: { addEventListener() {}, confirm: () => true }, setTimeout, clearTimeout });

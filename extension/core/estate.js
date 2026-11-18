@@ -1,3 +1,4 @@
+import { achievementBonuses } from './achievements.js';
 import { walletBalance } from './shop.js';
 
 export const ESTATE_PRICE = 500;
@@ -56,7 +57,7 @@ export function recordEstateVisit(state, entry, baseAmount) {
   const sameDay = estate.lastDay === state.dayKey;
   const count = sameDay ? estate.dailyVisits : 0;
   if (count >= ESTATE_DAILY_LIMIT) return { state: next, income: 0 };
-  const income = round(Math.min(10, Math.max(0, baseAmount)) * ESTATE_LEVELS[estate.level - 1].coefficient);
+  const income = round(Math.min(10, Math.max(0, baseAmount)) * ESTATE_LEVELS[estate.level - 1].coefficient * (1 + achievementBonuses(state).estate));
   if (!income) return { state: next, income: 0 };
   next = { ...next, estates: state.estates.map(row => row.host !== host ? row : {
     ...row, visits: row.visits + 1, days: row.days + (sameDay ? 0 : 1), lastDay: state.dayKey,

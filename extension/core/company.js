@@ -1,3 +1,4 @@
+import { achievementBonuses } from './achievements.js';
 import { walletBalance } from './shop.js';
 import { estateHost } from './estate.js';
 
@@ -89,11 +90,13 @@ export function recordCompanyVisit(state, entry, random = Math.random) {
     if (seen.length < order.target) return { ...company, order: { ...order, seen } };
     const canRisk = available >= (order.maxLoss || 0);
     const failed = order.mode === 'risk' && canRisk && random() < 0.1;
-    const amount = failed ? -order.maxLoss : order.mode === 'risk' && !canRisk ? order.safeReward : order.reward;
+    const baseIncome = failed ? -order.maxLoss : order.mode === 'risk' && !canRisk ? order.safeReward : order.reward;
+    const amount = baseIncome > 0 ? round(baseIncome * (1 + achievementBonuses(state).company)) : baseIncome;
+    const achievementBonus = round(amount - baseIncome);
     available = round(available + amount);
     const lossStreak = failed ? (company.lossStreak || 0) + 1 : 0;
     const strategy = lossStreak >= 2 || (order.mode === 'risk' && !canRisk) ? 'safe' : company.strategy;
-    const project = { title: order.title, amount, ts: Date.now(), gross: failed ? 0 : order.mode === 'risk' && !canRisk ? round(order.safeReward + order.salary) : order.gross,
+    const project = { title: order.title, amount, achievementBonus, ts: Date.now(), gross: failed ? 0 : order.mode === 'risk' && !canRisk ? round(order.safeReward + order.salary) : order.gross,
       cost: failed ? order.maxLoss : order.mode === 'risk' && !canRisk ? 0 : order.cost || 0, salary: failed ? 0 : order.salary || 0,
       outcome: failed ? '返工损失' : order.mode === 'risk' && !canRisk ? '余额不足，按普通订单结算' : '正常交付' };
     const next = { ...company, completed: company.completed + 1,

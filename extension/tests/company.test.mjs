@@ -35,7 +35,7 @@ test('automatic orders complete independently and rewards do not cascade or rece
   for (let i = 0; i < 3; i++) state = applyDeposit(state, visit(i));
   assert.deepEqual(state.companies.map(c => c.completed), [1, 1, 0]);
   assert.deepEqual(state.companies.map(c => c.order.seen.length), [0, 0, 3]);
-  assert.equal(state.totalAsset, 20000 + 3 * 55 + 160);
+  assert.equal(state.totalAsset, 20325.8);
   assert.equal(state.totalVisits, 3);
   assert.equal(state.weekly.deepReads, 3);
   assert.equal(state.recentEntries[0].kind, 'company_income');
@@ -44,7 +44,7 @@ test('automatic orders complete independently and rewards do not cascade or rece
   assert.equal(state.dailyHistory[state.dayKey].asset, state.todayAsset);
   for (let i = 3; i < 5; i++) state = applyDeposit(state, visit(i, 15000));
   assert.equal(state.companies[2].completed, 1);
-  assert.equal(state.companies[2].income, 100);
+  assert.equal(state.companies[2].income, 101);
   const before = structuredClone(state.companies);
   for (const kind of ['task_reward', 'estate_income', 'company_income']) state = applyDeposit(state, { kind, amount: 100, ...visit(10), metrics: { dwellMs: 60000 } });
   assert.deepEqual(state.companies, before);

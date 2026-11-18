@@ -66,3 +66,5 @@
 .unlocked .achievement-emblem:before{left:4px}
 .unlocked .achievement-emblem:after{right:4px}
 .achievement-card.unlocked:after{inset:5px;border-radius:7px}
+
+.achievement-body .achievement-reward{color:var(--green);font-size:12px;font-weight:600;line-height:1.8}

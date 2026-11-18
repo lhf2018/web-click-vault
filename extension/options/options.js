@@ -72,7 +72,7 @@ function renderFormula(state) {
     <p class="formula-meta">
       ${escapeText(f.reason)}<br />
       ${(f.extras || []).map(effect => `${escapeText(effect.name)}：额外 +${Math.round(effect.bonus*100)}%`).join(" · ")}<br />
-      ${f.multiplier > 1 ? `基础入账 ${money(f.baseAmount)} × 商店倍率 ${Number(f.multiplier)}<br />` : ""}
+      ${f.multiplier > 1 ? `基础入账 ${money(f.baseAmount)} × 收益倍率 ${Number(f.multiplier)}<br />` : ""}
       停留 ${Math.round((f.dwellMs || 0) / 1000)}s · 加载 ${Math.round(f.loadMs || 0)}ms ·
       新鲜度 ${escapeText(f.freshKind || "-")} · 来源 ${f.dwellSource === "probe" ? "可见性探针" : "标签估算"}
     </p>
@@ -123,7 +123,7 @@ function saveSetting(key, input) {
       const res = await request("SET_SETTINGS", { [key]: value });
       if (!res?.ok) throw new Error(res?.error || "保存失败，请重试。");
       if (res.state?.settings?.[key] !== value) {
-        throw new Error("扩展后台仍是旧版本，设置尚未保存。请到 chrome://extensions 重新加载「网页资产计」，再重新打开设置。" );
+        throw new Error("扩展后台仍是旧版本，设置尚未保存。请到 chrome://extensions 重新加载「网页轻度经营」，再重新打开设置。" );
       }
       if (revision === settingsRevision) {
         fill(res.state, res.week);
@@ -168,7 +168,7 @@ exportButton.addEventListener('click', async () => {
     link.href = url;
     const date = new Date();
     const day = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    link.download = `网页资产计-${day}.json`;
+    link.download = `网页轻度经营-${day}.json`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     backupHint.textContent = '备份已导出';

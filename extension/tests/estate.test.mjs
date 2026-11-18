@@ -49,17 +49,17 @@ test('operations credit unmultiplied income without extra visits/tasks and cap a
   state = next;
   const before = structuredClone(state);
   next = applyDeposit(state, visit(), { amount: 5 });
-  assert.equal(next.totalAsset - before.totalAsset, 56); // 5 × 11 equipment + 5 × .2 estate
+  assert.equal(Math.round((next.totalAsset - before.totalAsset) * 100) / 100, 56.36); // browsing 55.35 + estate 1.01
   assert.equal(next.totalVisits, before.totalVisits + 1);
   assert.equal(next.weekly.deepReads, before.weekly.deepReads);
   assert.equal(next.recentEntries[0].kind, 'estate_income');
-  assert.equal(next.recentEntries[0].amount, 1);
-  assert.equal(next.lastFormula.amount, 55);
+  assert.equal(next.recentEntries[0].amount, 1.01);
+  assert.equal(next.lastFormula.amount, 55.35);
   assert.equal(next.dailyHistory[next.dayKey].asset, next.todayAsset);
   for (let i = 0; i < 5; i++) next = applyDeposit(next, visit());
   assert.equal(next.estates[0].dailyVisits, 3);
   assert.equal(next.estates[0].visits, 3);
-  assert.equal(next.estates[0].income, 3);
+  assert.equal(next.estates[0].income, 3.03);
   assert.equal(next.estates[0].days, 1);
   const other = applyDeposit(next, visit('docs.example.com'));
   assert.deepEqual(other.estates, next.estates);

@@ -1,5 +1,5 @@
 import { collectionMarket, marketQuote } from '../core/market-pricing.js';
-import { COLLECTION_TYPES, collectibleValue, explorationLevel, collectiblePrice, collectibleIdentity } from '../core/collectibles.js';
+import { collectibleDropRate, COLLECTION_TYPES, collectibleValue, explorationLevel, collectiblePrice, collectibleIdentity } from '../core/collectibles.js';
 const $ = id => document.getElementById(id);
 const money = n => `¥${Number(n).toFixed(2)}`;
 let state, revision = 0, busy = false;
@@ -41,7 +41,7 @@ function render() {
   $('marketIndex').textContent = `市场指数 ${currentMarket.index}`;
   $('commissionSummary').textContent = `收购 ${COLLECTION_TYPES[currentMarket.featured].name} · 市价加 10% · 剩余 ${currentMarket.remaining} / 2 件`;
   $('marketWeek').textContent = `${currentMarket.week} 当周 · 周一更新`;
-  $('level').textContent = `探索等级 Lv.${explorationLevel(state)}`;
+  $('level').textContent = `探索等级 Lv.${explorationLevel(state)} · 发现概率 ${Number((collectibleDropRate(state) * 100).toFixed(1))}%`;
   $('priceRange').textContent = `新藏品初始估值 ¥${collectiblePrice('badge', explorationLevel(state), -15).toFixed(2)}–¥${collectiblePrice('chip', explorationLevel(state), 15).toFixed(2)} · 持有后按独立行情浮动`;
   $('wall').replaceChildren();
   const query = ($('siteSearch').value || '').trim().toLowerCase();

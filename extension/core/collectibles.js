@@ -1,3 +1,4 @@
+import { achievementBonuses } from './achievements.js';
 // Passive souvenirs. No remote resources are loaded by the collection wall.
 export const COLLECTION_LIMIT = 600;
 export const COLLECTION_DROP_RATE = 0.03;
@@ -58,7 +59,7 @@ export function recordCollectibleVisit(state, entry, random = Math.random) {
   const source = url.origin + url.pathname;
   const today = items.filter(item => item.day === state.dayKey);
   if (today.length >= 3 || today.some(item => item.host === host) || items.some(item => item.source === source)) return state;
-  if (random() >= COLLECTION_DROP_RATE) return state;
+  if (random() >= collectibleDropRate(state)) return state;
   const page = cleanPageElements(entry.pageElements);
   const type = page.hasCode ? 'chip' : entry.metrics.dwellMs >= 60000 ? 'bookmark' : 'badge';
   const foundLevel = explorationLevel(state);
@@ -87,3 +88,5 @@ export function sellCollectible(state, id) {
       host: item.host, amount: item.value, reason: `藏品出售 · ${COLLECTION_TYPES[item.type].name} · 资产转为现金，不计浏览收益` },
       ...(state.recentEntries || [])].slice(0, 50) };
 }
+
+export function collectibleDropRate(state) { return COLLECTION_DROP_RATE + achievementBonuses(state).drop; }

@@ -88,6 +88,9 @@ test('achievement page merges milestones and equipment into 63 entries with shar
   });
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(get('achievementWall').children.length, 63);
+  const rewardText = n => [n.textContent, ...(n.children || []).map(rewardText)].join(' ');
+  assert.match(rewardText(get('achievementWall')), /已生效 · 浏览收益/);
+  assert.match(rewardText(get('achievementWall')), /解锁奖励 · 藏品发现概率/);
   assert.equal(get('achievementCount').textContent, '已解锁 3 / 63');
   get('achievementCategory').value = '浏览足迹'; get('achievementCategory').change();
   assert.equal(get('achievementWall').children.length, 5);
