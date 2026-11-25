@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
-import { COMPANY_TYPES, companyPrice, companyLevel, companyType, createCompany, manageCompany, COMPANY_STAFF, COMPANY_FACILITIES } from '../core/company.js';
+import { COMPANY_TYPES, COMPANY_STAGES, companyPrice, companyLevel, companyType, createCompany, manageCompany, COMPANY_STAFF, COMPANY_TEAM_MILESTONES, companyTeam, companyTeamCapacity, companyStaffRequirement, COMPANY_FACILITIES, COMPANY_EXPANSIONS, expansionType, companyValuations, companyMarketProgress, nextOrder } from '../core/company.js';
 import { walletBalance } from '../core/shop.js';
 import { companyBrief } from '../core/journey.js';
 import { defaultState } from '../core/ledger.js';
@@ -17,7 +17,7 @@ function setup(sendMessage) {
     addEventListener(event, fn) { this[event] = fn; }, setAttribute() {}, focus() { this.focused = true; } }; }
   const get = id => { if (!nodes.has(id)) nodes.set(id, node()); return nodes.get(id); };
   get('companyType').value = 'publisher'; get('status').textContent = '正在读取账本…';
-  vm.runInNewContext(source, { achievementBonuses, assetOverview, companyBrief, COMPANY_TYPES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_FACILITIES, walletBalance,
+  vm.runInNewContext(source, { achievementBonuses, assetOverview, companyBrief, COMPANY_TYPES, COMPANY_STAGES, companyPrice, companyLevel, companyType, COMPANY_STAFF, COMPANY_TEAM_MILESTONES, companyTeam, companyTeamCapacity, companyStaffRequirement, COMPANY_FACILITIES, COMPANY_EXPANSIONS, expansionType, companyValuations, companyMarketProgress, nextOrder, walletBalance,
     document: { getElementById: get, createElement: node }, Option: function(text, value) { return { text, value }; },
     chrome: { runtime: { sendMessage }, storage: { onChanged: { addListener() {} } } },
     window: { addEventListener() {}, confirm: () => true }, setTimeout, clearTimeout });
@@ -31,7 +31,7 @@ test('management buttons hire staff, build facilities and opt into risk without 
   const originalOrder = structuredClone(state.companies[0].order);
   const ui = setup(async message => {
     if (message.type === 'MANAGE_COMPANY') state = manageCompany(state, message.id, message.action, message.value);
-    return { ok: true, state, features: { companies: true, companyManagement: true } };
+    return { ok: true, state, features: { companies: true, companyManagement: true, companyTeams: true } };
   });
   await flush();
   function find(text) {
@@ -41,7 +41,7 @@ test('management buttons hire staff, build facilities and opt into risk without 
   const recruit = find('招聘编辑 · ¥200.00');
   assert.equal(recruit.disabled, false);
   await recruit.click();
-  assert.equal(state.companies[0].staff, 'specialist');
+  assert.deepEqual(companyTeam(state.companies[0]), ['specialist']);
   await find('专业工作台 · ¥600.00').click();
   assert.deepEqual(state.companies[0].facilities, ['studio']);
   await find('风险订单').click();
@@ -112,15 +112,15 @@ test('merged company cards show old orders and work stories without rewriting le
   const texts = [];
   const walk = n => { texts.push(n.textContent); (n.children || []).forEach(walk); };
   walk(ui.get('companies'));
-  assert.ok(texts.some(t => t.includes('街区口碑')));
+  assert.ok(texts.includes('再交付 5 单进入成长'));
   assert.ok(texts.includes(company.order.title));
-  assert.ok(texts.some(t => t.startsWith('委托方 ·')));
-  assert.ok(texts.includes('作品档案 · 累计 5 次交付 · 最近 1 项'));
+  assert.ok(texts.includes(company.order.title));
+  assert.ok(texts.includes('交付记录'));
   assert.ok(texts.includes('旧作品'));
-  assert.ok(texts.some(t => t.startsWith('故事委托方 ·')));
+  assert.ok(texts.includes('主营业务'));
   assert.deepEqual(state, before);
   const html = await readFile(new URL('../company/index.html', import.meta.url), 'utf8');
-  assert.ok(html.includes('正在发生的生意'));
+  assert.ok(html.includes('旗下公司'));
   assert.equal(html.includes('../journey/journey.js'), false);
 });
 
@@ -132,4 +132,39 @@ test('company headline shows its valuation independently of shared purchase cash
   assert.equal(ui.get('balance').textContent, '¥1,250.00');
   assert.equal(walletBalance(state), 9000);
   assert.equal(ui.get('createButton').disabled, false);
+});
+
+test('opening a second business adds a parallel order and keeps the expansion panel open', async () => {
+  let state = createCompany(funded(), '双线公司', 'publisher');
+  state.companies[0].completed = 5;
+  const ui = setup(async message => {
+    if (message.type === 'MANAGE_COMPANY') state = manageCompany(state, message.id, message.action, message.value);
+    return { ok: true, state, features: { companies: true, companyManagement: true, companyExpansion: true } };
+  });
+  await flush();
+  const card = () => ui.get('companies').children[0];
+  const panels = () => card().children.find(node => node.className === 'company-panels');
+  const tabs = () => panels().children[0].children;
+  const expansion = () => panels().children[1];
+  assert.equal(expansion().hidden, true);
+  tabs()[0].click();
+  assert.equal(expansion().hidden, false);
+  tabs()[2].click();
+  assert.equal(expansion().hidden, true);
+  assert.equal(panels().children[3].hidden, false);
+  tabs()[0].click();
+  function texts(node) { return [node.textContent, ...node.children.flatMap(texts)]; }
+  const labels = texts(expansion());
+  assert.ok(labels.includes('全部进钱包'));
+  assert.ok(labels.includes('一半留在公司'));
+  assert.ok(labels.includes('长期目标 · 3 万亿市值'));
+  const open = expansion().children[0].children.find(node => node.textContent === '开拓 · ¥1,800.00');
+  assert.equal(open.disabled, false);
+  await open.click();
+  assert.equal(state.companies[0].expansion.level, 1);
+  assert.equal(card().children.filter(node => node.className === 'company-order').length, 2);
+  assert.equal(expansion().hidden, false);
+  assert.equal(panels().children.at(-1).textContent, '第二业务已开始接单。');
+  tabs()[0].click();
+  assert.equal(expansion().hidden, true);
 });

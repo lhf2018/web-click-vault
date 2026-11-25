@@ -112,6 +112,19 @@ test('reselling and repurchasing estate does not reset the daily operating allow
   assert.equal(state.estates[0].income, before);
 });
 
+test('estate exchange refunds the historical purchase price and quotes the replacement after sale', () => {
+  const estateDiscoveries = ['first', 'second', 'replacement'].map(host => ({ host, url: `https://${host}.test/` }));
+  const state = purchaseEstate(purchaseEstate({ ...funded(), estateDiscoveries }, 'first'), 'second');
+  delete state.estates[0].purchasePrice; // Legacy holding bought at the original flat price.
+  assert.deepEqual(exchangeAssets(state).map(asset => asset.price), [350, 700]);
+  assert.throws(() => tradeAsset(state, 'estate', 'second', 'replacement', 700, 2000), /报价已变化/);
+  const exchanged = tradeAsset(state, 'estate', 'second', 'replacement', 700, 1000);
+  assert.equal(exchanged.estates.length, 2);
+  assert.equal(exchanged.estates[1].purchasePrice, 1000);
+  assert.equal(walletBalance(exchanged), walletBalance(state) - 300);
+  assert.equal(assetOverview(exchanged).estates, 1500);
+});
+
 test('market prices follow time independently of browsing, including offline periods', () => {
   const now = Date.UTC(2026, 10, 18, 12);
   let state = investProject(funded(), 'zine', 3, now);

@@ -30,7 +30,8 @@ test('purchases transfer cash into asset values, headquarters and income are not
   state.companies[0].completed = 5;
   assert.equal(assetOverview(state).companies, 3250);
   state.companies[0].income = 500;
-  assert.equal(assetOverview(state).companies, 3250);
+  assert.equal(assetOverview(state).companies, 4991.10);
+  assert.equal(assetOverview(state).cash, overview.cash - 800);
   assert.deepEqual(assetOverview(before), overview);
 });
 test('achievement display preserves stored unlocks even when balance is below threshold', () => {

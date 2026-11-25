@@ -11,10 +11,11 @@ export function estateLandmark(estate) {
     { name: '星港', color: '#76658e', description: '为每次探索，留下一盏归航的灯。' },
   ];
   const theme = themes[hash(estate.host) % themes.length];
-  const level = Math.max(1, Math.min(5, estate.level || 1));
+  const level = Math.max(1, Math.min(ESTATE_LEVELS.length, estate.level || 1));
+  const next = ESTATE_LEVELS[level];
   return { ...theme, title: `${theme.name}${ESTATE_LEVELS[level - 1].name}`, level,
     milestones: ESTATE_LEVELS.map((step, i) => ({ name: step.name, reached: level > i })),
-    next: level < 5 ? { name: ESTATE_LEVELS[level].name, visits: Math.max(0, ESTATE_LEVELS[level].visits - (estate.visits || 0)), days: Math.max(0, ESTATE_LEVELS[level].days - (estate.days || 0)), price: ESTATE_LEVELS[level].price } : null };
+    next: next ? { name: next.name, visits: Math.max(0, next.visits - (estate.visits || 0)), days: Math.max(0, next.days - (estate.days || 0)), price: next.price } : null };
 }
 export function companyBrief(company, order = company.order) {
   const publisher = company.type === 'publisher';

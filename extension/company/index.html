@@ -1,13 +1,16 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>我的公司 · 网页轻度经营</title><link rel="stylesheet" href="../shop/shop.css"><link rel="stylesheet" href="company.css"><link rel="stylesheet" href="../shared/shell.css"></head>
 <body><div class="layout">
-<aside class="sidebar"><a class="brand" href="../popup/index.html"><span class="brand-icon">▤</span><span>网页轻度经营<small>你的浏览，正在积累。</small></span></a><div class="nav-label">资产实验室</div><a class="nav" href="../overview/index.html">◉ &nbsp; 资产汇总</a><a class="nav" href="../shop/index.html">◈ &nbsp; 增长商店</a><a class="nav" href="../estate/index.html">⌂ &nbsp; 我的地产</a><a class="nav active" href="../company/index.html" aria-current="page">▥ &nbsp; 我的公司</a><a class="nav" href="../collection/index.html">▧ &nbsp; 收藏品</a><a class="nav" href="../exchange/index.html">⇄ &nbsp; 资产置换</a><a class="nav" href="../investments/index.html">▧ &nbsp; 项目投资</a><a class="nav" href="../achievements/index.html">✧ &nbsp; 成就</a><a class="nav" href="../options/index.html">⚙ &nbsp; 账本与设置</a><a class="nav" href="../weekly/index.html">◇ &nbsp; 每周探索任务</a><div class="sidebar-bottom"><span class="live-dot"></span> 所有积累，只在本机<br><small>这里的金额均为虚拟资产。</small></div></aside>
-<main>
-<section class="hero"><div><h1>我的公司</h1></div><div class="hero-art" aria-hidden="true"><div class="orbit"></div><div class="orbit second"></div><span class="spark">▥</span><span class="art-label">GROW YOUR BUSINESS</span></div></section>
-<section class="stats" aria-label="公司概况"><div class="wallet"><span>公司估值</span><strong id="balance">—</strong></div><div><span>旗下公司</span><strong id="count">—</strong><small>每家公司独立自动经营</small></div><div><span>已交付项目</span><strong id="completed">—</strong><small>每 5 单自动提升一级，最高 5 级</small></div><div><span>累计经营净收益</span><strong id="income">—</strong><small>不叠加装备倍率</small></div></section>
+<aside class="sidebar"><a class="brand" href="../popup/index.html"><span class="brand-icon">▤</span><span>网页轻度经营</span></a><a class="nav" href="../overview/index.html">◉ &nbsp; 资产汇总</a><a class="nav" href="../shop/index.html">◈ &nbsp; 增长商店</a><a class="nav" href="../estate/index.html">⌂ &nbsp; 我的地产</a><a class="nav active" href="../company/index.html" aria-current="page">▥ &nbsp; 我的公司</a><a class="nav" href="../collection/index.html">▧ &nbsp; 收藏品</a><a class="nav" href="../exchange/index.html">⇄ &nbsp; 资产置换</a><a class="nav" href="../investments/index.html">▧ &nbsp; 项目投资</a><a class="nav" href="../achievements/index.html">✧ &nbsp; 成就</a><a class="nav" href="../options/index.html">⚙ &nbsp; 账本与设置</a><a class="nav" href="../weekly/index.html">◇ &nbsp; 每周探索任务</a><div class="sidebar-bottom">本地数据 · 虚拟资产</div></aside>
+<main class="company-dashboard">
+<header class="company-heading"><h1>我的公司</h1><a class="create-link" id="createShortcut" href="#createCompany">＋ 创办公司</a></header>
+<section class="company-overview" aria-label="公司概况">
+  <div class="valuation"><span>总市值</span><strong id="balance">—</strong></div>
+  <div><span>现金</span><strong id="cash">—</strong></div>
+  <div><span>净收益</span><strong id="income">—</strong></div>
+</section>
 <p class="status" id="status" role="status" aria-live="polite">正在读取账本…</p>
-<section class="growth-section"><div class="section-heading"><div><h2>正在发生的生意</h2></div></div><div class="products" id="companies"></div></section>
-<details class="info-panel"><summary>创办下一家公司</summary><p>首家 ¥1,000，此后每家递增 ¥1,000。共用个人余额，没有离线扣费。</p>
+<section class="company-portfolio"><div class="portfolio-heading"><h2>旗下公司</h2><span><span id="count">—</span> 家公司 · <span id="completed">—</span> 次交付</span></div><div id="companies"></div></section>
+<details class="info-panel" id="createCompany"><summary>创办公司</summary><p>首家 ¥1,000，此后每家递增 ¥1,000，从个人现金支付。</p>
 <form id="createForm" novalidate><div class="company-fields"><label>公司名称<input id="companyName" name="name" maxlength="24" required placeholder="为你的新事业起个名字"></label><label>主营业务<select id="companyType" name="type"><option value="publisher">出版社 · 深度阅读</option><option value="explorer">探索事务所 · 不同域名</option></select></label><label>公司地址<select id="headquarters" name="headquarters"><option value="">线上办公室（免费）</option></select></label></div><p id="businessHint"></p><button class="buy" id="createButton" type="submit" disabled>正在读取创办费用…</button><p id="createFeedback" class="create-feedback" role="status" aria-live="polite"></p></form></details>
-<p id="spent" class="company-meta"></p>
 </main></div><script type="module" src="company.js"></script><script type="module" src="../shared/shell.js"></script></body></html>

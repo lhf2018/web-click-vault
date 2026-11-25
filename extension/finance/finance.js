@@ -1,7 +1,7 @@
 import { exchangeAssets } from '../core/exchange.js';
 import { investmentCatalog, investmentValue, investmentQuote, investmentPosition, MAX_INVESTMENT_HOLDINGS, MAX_ORDER_UNITS } from '../core/investments.js';
 import { SHOP_ITEMS, itemLevel, itemPrice, walletBalance } from '../core/shop.js';
-import { ESTATE_PRICE } from '../core/estate.js';
+import { estatePurchasePrice } from '../core/estate.js';
 import { COMPANY_FACILITIES } from '../core/company.js';
 const $ = id => document.getElementById(id);
 const page = document.querySelector('[data-finance]').dataset.finance;
@@ -45,7 +45,7 @@ function renderExchange() {
     n.append(el('strong', money(asset.price), 'quote'), el('p', `可核实投入 ${money(asset.cost)} · 折损 ${money(asset.cost - asset.price)}`),
       button(`出售 · ${money(asset.price)}`, { type: 'SELL_ASSET', kind: asset.kind, id: asset.id, price: asset.price }, `出售 ${asset.name}，收到 ${money(asset.price)}？${asset.detail}。总资产将减少折损金额。`));
     const targets = asset.kind === 'equipment' ? SHOP_ITEMS.filter(i => i.id !== asset.id && itemLevel(state, i) < i.maxLevel).map(i => ({ id: i.id, name: `${i.name} Lv.${itemLevel(state, i) + 1}`, price: itemPrice(i, itemLevel(state, i)) }))
-      : asset.kind === 'estate' ? (state.estateDiscoveries || []).filter(d => d.host !== asset.id && !(state.estates || []).some(e => e.host === d.host)).map(d => ({ id: d.host, name: d.host, price: ESTATE_PRICE }))
+      : asset.kind === 'estate' ? (state.estateDiscoveries || []).filter(d => !state.estates.some(e => e.host === d.host)).map(d => ({ id: d.host, name: d.host, price: estatePurchasePrice(state.estates.length - 1) }))
         : Object.entries(COMPANY_FACILITIES).filter(([id]) => id !== asset.facilityId && !state.companies.find(c => c.id === asset.companyId).facilities.includes(id)).map(([id, f]) => ({ id, name: f.name, price: f.price }));
     if (targets.length) {
       const select = el('select'); select.setAttribute('aria-label', `${asset.name}的置换目标`);
@@ -53,7 +53,7 @@ function renderExchange() {
       const hint = el('p');
       const update = () => { const target = targets.find(t => t.id === select.value); hint.textContent = `卖旧抵 ${money(asset.price)}，${target.price >= asset.price ? `补 ${money(target.price - asset.price)}` : `余款入账 ${money(asset.price - target.price)}`}。目标仍需满足解锁条件。`; };
       select.addEventListener('change', update); n.append(select, hint); update();
-      n.append(button('确认置换', () => ({ type: 'TRADE_ASSET', kind: asset.kind, id: asset.id, target: select.value, price: asset.price }), () => `卖出 ${asset.name} 并购入 ${targets.find(t => t.id === select.value).name}？${hint.textContent} 购买失败将保留原资产。`, false, true));
+      n.append(button('确认置换', () => ({ type: 'TRADE_ASSET', kind: asset.kind, id: asset.id, target: select.value, price: asset.price, targetPrice: targets.find(t => t.id === select.value).price }), () => `卖出 ${asset.name} 并购入 ${targets.find(t => t.id === select.value).name}？${hint.textContent} 购买失败将保留原资产。`, false, true));
     }
     $('cards').append(n);
   }

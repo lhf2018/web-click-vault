@@ -11,8 +11,7 @@ if (sidebar) {
   links.setAttribute('aria-label', '主导航');
   sidebar.querySelectorAll('a.nav').forEach(link => links.appendChild(link));
   toggle.setAttribute('aria-controls', links.id);
-  sidebar.insertBefore(toggle, sidebar.querySelector('.nav-label'));
-  sidebar.insertBefore(links, sidebar.querySelector('.sidebar-bottom'));
+  sidebar.querySelector('.brand').after(toggle, links);
   function close() {
     sidebar.classList.remove('nav-open');
     toggle.setAttribute('aria-expanded', 'false');

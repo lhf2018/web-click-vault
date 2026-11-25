@@ -2,7 +2,6 @@ import { achievementBonuses } from './achievements.js';
 import { walletBalance } from './shop.js';
 
 export const ESTATE_PRICE = 500;
-export const ESTATE_SLOTS = 3;
 export const ESTATE_DAILY_LIMIT = 3;
 export const ESTATE_LEVELS = [
   { name: '小摊位', coefficient: 0.2, price: 0, visits: 0, days: 0, symbol: '⌂' },
@@ -10,8 +9,21 @@ export const ESTATE_LEVELS = [
   { name: '工作室', coefficient: 0.5, price: 2000, visits: 15, days: 5, symbol: '▥' },
   { name: '大楼', coefficient: 0.75, price: 5000, visits: 30, days: 10, symbol: '▦' },
   { name: '总部', coefficient: 1, price: 12000, visits: 60, days: 20, symbol: '♜' },
+  { name: '购物中心', coefficient: 1.8, price: 25000, visits: 90, days: 30, symbol: '▦' },
+  { name: '城市综合体', coefficient: 3.2, price: 55000, visits: 135, days: 45, symbol: '▦' },
+  { name: '全国商业地产集团', coefficient: 5, price: 120000, visits: 195, days: 65, symbol: '▦' },
 ];
 const round = n => Math.round(n * 100) / 100;
+
+export function estatePurchasePrice(ownedCount) {
+  const doublingSteps = Math.min(ownedCount, 9);
+  return ESTATE_PRICE * 2 ** doublingSteps * (1 + ownedCount - doublingSteps);
+}
+
+export function estateCost(estate) {
+  return (estate.purchasePrice ?? ESTATE_PRICE) +
+    ESTATE_LEVELS.slice(1, estate.level).reduce((cost, level) => cost + level.price, 0);
+}
 
 // Exact hostname (except www): keep unrelated tenants and subdomains separate.
 export function estateHost(url) {
@@ -22,15 +34,16 @@ export function estateHost(url) {
   } catch { return null; }
 }
 
-export function purchaseEstate(state, host) {
+export function purchaseEstate(state, host, expectedPrice) {
   const candidate = (state.estateDiscoveries || []).find(row => row.host === host);
   if (!candidate) throw new Error('请先有效浏览这个网站');
   const estates = state.estates || [];
   if (estates.some(row => row.host === host)) throw new Error('已持有这个网站的地契');
-  if (estates.length >= ESTATE_SLOTS) throw new Error('地产位已满（最多 3 块）');
-  if (walletBalance(state) < ESTATE_PRICE) throw new Error('余额不足');
-  return { ...state, estateSpent: round((state.estateSpent || 0) + ESTATE_PRICE),
-    estates: [...estates, { host, url: candidate.url, level: 1, purchasedAt: Date.now(),
+  const price = estatePurchasePrice(estates.length);
+  if (expectedPrice != null && expectedPrice !== price) throw new Error('地契报价已变化，请刷新后重试');
+  if (walletBalance(state) < price) throw new Error('余额不足');
+  return { ...state, estateSpent: round((state.estateSpent || 0) + price),
+    estates: [...estates, { host, url: candidate.url, level: 1, purchasePrice: price, purchasedAt: Date.now(),
       visits: 0, days: 0, lastDay: state.estateSaleQuotas?.[host]?.lastDay || '', dailyVisits: state.estateSaleQuotas?.[host]?.dailyVisits || 0, income: 0 }] };
 }
 

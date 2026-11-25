@@ -31,7 +31,7 @@ function render() {
   const purchases = state.shopPurchases || [];
   if (!purchases.length) {
     const row = document.createElement('li');
-    row.textContent = '下一件好装备，将成为新的起点。';
+    row.textContent = '暂无购买记录。';
     $('purchases').append(row);
   }
   for (const purchase of purchases.slice(0,30)) {

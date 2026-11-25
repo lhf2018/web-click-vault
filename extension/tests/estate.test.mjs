@@ -2,7 +2,8 @@ import { syncAchievements } from '../core/achievements.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { defaultState, applyDeposit, ensureDayRollover } from '../core/ledger.js';
-import { estateHost, purchaseEstate, upgradeEstate } from '../core/estate.js';
+import { ESTATE_LEVELS, estateHost, estatePurchasePrice, purchaseEstate, upgradeEstate } from '../core/estate.js';
+import { assetOverview } from '../core/overview.js';
 import { walletBalance, purchaseUpgrade } from '../core/shop.js';
 
 const visit = (host = 'www.example.com', dwellMs = 15000) => ({
@@ -39,7 +40,15 @@ test('purchase preserves old fields and debits the shared wallet separately', ()
   let state = owned();
   for (const host of ['a.test', 'b.test']) state = purchaseEstate(applyDeposit(state, visit(host)), host);
   state = applyDeposit(state, visit('c.test'));
-  assert.throws(() => purchaseEstate(state, 'c.test'), /地产位已满/);
+  assert.throws(() => purchaseEstate(state, 'c.test', 2000), /报价已变化/);
+  const expanded = purchaseEstate(state, 'c.test', 4000);
+  assert.equal(expanded.estates.length, 4);
+  assert.deepEqual(expanded.estates.map(estate => estate.purchasePrice), [500, 1000, 2000, 4000]);
+  assert.equal(Math.round((walletBalance(state) - walletBalance(expanded)) * 100), 400000);
+  assert.equal(assetOverview(expanded).estates, 7500);
+  assert.equal(estatePurchasePrice(9), 256000);
+  assert.equal(estatePurchasePrice(10), 512000);
+  assert.equal(estatePurchasePrice(19), 2816000);
 });
 
 test('operations credit unmultiplied income without extra visits/tasks and cap at three', () => {
@@ -72,19 +81,21 @@ test('operations credit unmultiplied income without extra visits/tasks and cap a
   assert.equal(rolled.estates[0].days, 2);
 });
 
-test('five-level upgrades require money, visits and days without changing past earnings', () => {
+test('upgrades through the national group require money, visits and days without changing past earnings', () => {
   let state = owned();
   assert.throws(() => upgradeEstate(state, 'example.com'), /尚未达标/);
-  state = { ...state, totalAsset: 100000, estates: state.estates.map(e => ({ ...e, visits: 60, days: 20 })) };
-  for (let level = 2; level <= 5; level++) {
+  state = { ...state, totalAsset: 250000, estates: state.estates.map(e => ({ ...e, visits: 195, days: 65 })) };
+  for (let level = 2; level <= ESTATE_LEVELS.length; level++) {
     const next = upgradeEstate(state, 'example.com');
     assert.equal(next.estates[0].level, level);
     assert.equal(next.totalAsset, state.totalAsset);
     assert.equal(next.shopSpent, state.shopSpent);
     assert.deepEqual(next.recentEntries, state.recentEntries);
+    assert.equal(assetOverview(next).estates, next.estateSpent);
     state = next;
   }
   assert.throws(() => upgradeEstate(state, 'example.com'), /满级/);
+  assert.equal(applyDeposit(state, visit()).recentEntries[0].amount, 25);
   const poor = { ...owned(), totalAsset: 500, estates: state.estates.map(e => ({ ...e, level: 1 })) };
   assert.throws(() => upgradeEstate(poor, 'example.com'), /余额不足/);
 });

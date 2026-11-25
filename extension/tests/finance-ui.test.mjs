@@ -7,7 +7,7 @@ import { COLLECTION_TYPES } from '../core/collectibles.js';
 import { exchangeAssets, sellAsset, tradeAsset } from '../core/exchange.js';
 import { investmentCatalog, investmentValue, investmentQuote, investmentPosition, investProject, exitProject, MAX_INVESTMENT_HOLDINGS, MAX_ORDER_UNITS } from '../core/investments.js';
 import { SHOP_ITEMS, itemLevel, itemPrice, walletBalance, purchaseUpgrade } from '../core/shop.js';
-import { ESTATE_PRICE } from '../core/estate.js';
+import { estatePurchasePrice } from '../core/estate.js';
 import { COMPANY_FACILITIES } from '../core/company.js';
 import { defaultState } from '../core/ledger.js';
 const source = (await readFile(new URL('../finance/finance.js', import.meta.url), 'utf8')).replace(/^import .*;\r?\n/gm, '');
@@ -19,13 +19,13 @@ async function setup(page, initial) {
     replaceChildren(...kids) { this.children = kids; }, setAttribute() {}, addEventListener(name, fn) { const previous = this[name]; this[name] = (...args) => { previous?.(...args); return fn(...args); }; } }; }
   const get = id => { if (!nodes.has(id)) nodes.set(id, node('div')); return nodes.get(id); };
   vm.runInNewContext(source, { collectionMarket, marketQuote, COLLECTION_TYPES, exchangeAssets, investmentCatalog, investmentValue, investmentQuote, investmentPosition, Date,
-    SHOP_ITEMS, itemLevel, itemPrice, walletBalance, ESTATE_PRICE, COMPANY_FACILITIES, MAX_INVESTMENT_HOLDINGS, MAX_ORDER_UNITS,
+    SHOP_ITEMS, itemLevel, itemPrice, walletBalance, estatePurchasePrice, COMPANY_FACILITIES, MAX_INVESTMENT_HOLDINGS, MAX_ORDER_UNITS,
     document: { getElementById: get, createElement: node, querySelector: () => ({ dataset: { finance: page } }) },
     chrome: { runtime: { sendMessage: async m => {
       try {
         if (m.type === 'MARKET_SELL') state = sellAtMarket(state, m.id, m.mode, m.week, m.price);
         if (m.type === 'SELL_ASSET') state = sellAsset(state, m.kind, m.id, m.price);
-        if (m.type === 'TRADE_ASSET') state = tradeAsset(state, m.kind, m.id, m.target, m.price);
+        if (m.type === 'TRADE_ASSET') state = tradeAsset(state, m.kind, m.id, m.target, m.price, m.targetPrice);
         if (m.type === 'INVEST_PROJECT') state = investProject(state, m.projectId, m.units);
         if (m.type === 'EXIT_PROJECT') state = exitProject(state, m.id, m.units ?? null);
         return { ok: true, state };

@@ -3,31 +3,31 @@
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>增长商店 · 网页轻度经营</title><link rel="stylesheet" href="shop.css"><link rel="stylesheet" href="../shared/shell.css"></head>
 <body>
 <div class="layout">
-  <aside class="sidebar"><a class="brand" href="../popup/index.html"><span class="brand-icon">▤</span><span>网页轻度经营<small>你的浏览，正在积累。</small></span></a><div class="nav-label">资产实验室</div><a class="nav" href="../overview/index.html">◉ &nbsp; 资产汇总</a><a class="nav active" href="../shop/index.html" aria-current="page">◈ &nbsp; 增长商店</a><a class="nav" href="../estate/index.html">⌂ &nbsp; 我的地产</a><a class="nav" href="../company/index.html">▥ &nbsp; 我的公司</a><a class="nav" href="../collection/index.html">▧ &nbsp; 收藏品</a><a class="nav" href="../exchange/index.html">⇄ &nbsp; 资产置换</a><a class="nav" href="../investments/index.html">▧ &nbsp; 项目投资</a><a class="nav" href="../achievements/index.html">✧ &nbsp; 成就</a><a class="nav" href="../options/index.html">⚙ &nbsp; 账本与设置</a><a class="nav" href="../weekly/index.html">◇ &nbsp; 每周探索任务</a><div class="sidebar-bottom"><span class="live-dot"></span> 所有积累，只在本机<br><small>这里的金额均为虚拟资产。</small></div></aside>
+  <aside class="sidebar"><a class="brand" href="../popup/index.html"><span class="brand-icon">▤</span><span>网页轻度经营</span></a><a class="nav" href="../overview/index.html">◉ &nbsp; 资产汇总</a><a class="nav active" href="../shop/index.html" aria-current="page">◈ &nbsp; 增长商店</a><a class="nav" href="../estate/index.html">⌂ &nbsp; 我的地产</a><a class="nav" href="../company/index.html">▥ &nbsp; 我的公司</a><a class="nav" href="../collection/index.html">▧ &nbsp; 收藏品</a><a class="nav" href="../exchange/index.html">⇄ &nbsp; 资产置换</a><a class="nav" href="../investments/index.html">▧ &nbsp; 项目投资</a><a class="nav" href="../achievements/index.html">✧ &nbsp; 成就</a><a class="nav" href="../options/index.html">⚙ &nbsp; 账本与设置</a><a class="nav" href="../weekly/index.html">◇ &nbsp; 每周探索任务</a><div class="sidebar-bottom">本地数据 · 虚拟资产</div></aside>
   <main>
 
     <section class="hero">
       <div><h1>增长商店</h1></div>
-      <div class="hero-art" aria-hidden="true"><div class="orbit"></div><div class="orbit second"></div><span class="spark">✧</span><span class="art-label">GROW AS YOU GO</span></div>
+      <div class="hero-art" aria-hidden="true"><div class="orbit"></div><div class="orbit second"></div><span class="spark">✧</span></div>
     </section>
     <section class="stats shop-stats" aria-label="资产概况">
       <div class="wallet"><span>装备资产</span><strong id="balance">—</strong></div>
       <div><span>常驻收益倍率</span><strong id="multiplier">—</strong><small>装备特效满足条件时额外叠加</small></div>
-      <div><span>累计投入</span><strong id="spent">—</strong><small>历史累计收益不会减少</small></div>
+      <div><span>累计投入</span><strong id="spent">—</strong></div>
     </section>
 
 
     <section class="catalog" aria-labelledby="catalogTitle">
-      <div class="section-heading"><div><h2 id="catalogTitle">挑一件，开启新增长</h2></div><label class="owned-filter"><input type="checkbox" id="ownedOnly">只看已拥有</label></div>
+      <div class="section-heading"><div><h2 id="catalogTitle">装备目录</h2></div><label class="owned-filter"><input type="checkbox" id="ownedOnly">只看已拥有</label></div>
       <div class="catalog-controls"><div id="categories" class="categories" aria-label="商品分类"></div><label class="sort-label">排序 <select id="sort"><option value="default">精选顺序</option><option value="price">价格从低到高</option><option value="efficiency">常驻加成性价比</option></select></label></div>
       <label class="scenario-label">收益预览场景 <select id="scenario"><option value="normal">普通浏览</option><option value="first_host">当日首次探索域名 · 停留15秒</option><option value="seen_path">当日重访路径 · 停留15秒</option><option value="new_path">当日新路径 · 停留15秒</option><option value="deep">深度阅读 · 停留60秒</option><option value="extended">沉浸阅读 · 停留120秒</option></select></label>
       <p id="status" class="status" role="status" aria-live="polite">正在读取账本…</p>
       <div id="products" class="products"></div>
-      <p id="empty" class="empty" hidden>这个分类还没有收藏，去挑选第一件装备吧。</p>
+      <p id="empty" class="empty" hidden>当前筛选下没有装备。</p>
     </section>
     <section class="bottom-grid">
-      <div class="info-panel"><h2>好装备，长期陪伴。</h2><ol><li>常驻加成相加，装备特效满足浏览条件时额外叠加。</li><li>升级永久保留，下一次结算就能享受。</li><li>基础入账上限 ¥10，加成后的收益可以更高。</li></ol><p>示例：+10% 与 +30% 的装备叠加后，基础 ¥5 至少可入账 ¥7；满足装备特效时收益更高。没有离线利息，收益来自有效浏览。</p></div>
-      <div class="info-panel"><h2>你的增长足迹</h2><ul id="purchases" class="purchases"></ul></div>
+      <div class="info-panel"><h2>收益规则</h2><ol><li>常驻加成相加，装备特效满足浏览条件时额外叠加。</li><li>升级永久保留，下一次结算就能享受。</li><li>基础入账上限 ¥10，加成后的收益可以更高。</li></ol></div>
+      <div class="info-panel"><h2>购买记录</h2><ul id="purchases" class="purchases"></ul></div>
     </section>
 
   </main>

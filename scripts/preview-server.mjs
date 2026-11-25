@@ -28,18 +28,18 @@ window.chrome = {
  if(type==='SET_SETTINGS') state={...state,settings:{...state.settings,...patch}};
  if(type==='MARKET_SELL') state=sellAtMarket(state,patch.id,patch.mode,patch.week,patch.price);
  if(type==='SELL_ASSET') state=sellAsset(state,patch.kind,patch.id,patch.price);
- if(type==='TRADE_ASSET') state=tradeAsset(state,patch.kind,patch.id,patch.target,patch.price);
+ if(type==='TRADE_ASSET') state=tradeAsset(state,patch.kind,patch.id,patch.target,patch.price,patch.targetPrice);
  if(type==='INVEST_PROJECT') state=investProject(state,patch.projectId,patch.units ?? NaN);
  if(type==='EXIT_PROJECT') state=exitProject(state,patch.id,patch.units ?? null);
  if(type==='SELL_COLLECTIBLE') state=sellAtMarket(state,patch.id,'market',patch.week,patch.price);
  if(type==='BUY_UPGRADE') state=purchaseUpgrade(state,itemId);
- if(type==='BUY_ESTATE') state=purchaseEstate(state,patch.host);
+ if(type==='BUY_ESTATE') state=purchaseEstate(state,patch.host,patch.price);
  if(type==='UPGRADE_ESTATE') state=upgradeEstate(state,patch.host);
  if(type==='MANAGE_COMPANY') state=manageCompany(state,patch.id,patch.action,patch.value);
  if(type==='CREATE_COMPANY') state=createCompany(state,patch.name,patch.companyType,patch.headquarters);
  if(type==='DISMISS_ACHIEVEMENT') state={...state,pendingAchievement:null};
  persist();
- return {ok:true,state:structuredClone(state),week:buildWeekSeries(state),features:{companies:true,companyManagement:true}};
+ return {ok:true,state:structuredClone(state),week:buildWeekSeries(state),features:{companies:true,companyManagement:true,companyExpansion:true,companyTeams:true}};
  } catch(e){return {ok:false,error:e.message};}
  },openOptionsPage:()=>{location.href='/options/index.html';}},
  storage:{onChanged:{addListener:()=>{}}}
@@ -105,10 +105,11 @@ const server=http.createServer(async(req,res)=>{
  for (const page of ['overview','achievements','weekly','collection']) if(relative===page+'/index.html') data=Buffer.from(data.toString().replace('<body>','<body>'+demo).replace('<script type="module" src="'+page+'.js"></script>',''));
  if(relative==='popup/popup.js')data=Buffer.from(data.toString()+`\nwindow.addEventListener('demoUpdate',refresh);`);
  if(['exchange','investments'].some(page=>relative===page+'/index.html')) data=Buffer.from(data.toString().replace('<body>','<body>'+demo).replace('<script type="module" src="../finance/finance.js"></script>',''));
- const type={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png'}[path.extname(file)]||'application/octet-stream';
+ const type={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg'}[path.extname(file)]||'application/octet-stream';
  res.writeHead(200,{'Content-Type':type+'; charset=utf-8','Cache-Control':'no-store'}).end(data);
  }catch{res.writeHead(404).end('Not found');}
 });
-server.listen(4173,'127.0.0.1',()=>console.log('Shop preview: http://127.0.0.1:4173'));
+const port = Number(process.env.PAGE_JOURNEY_PREVIEW_PORT || 4173);
+server.listen(port,'127.0.0.1',()=>console.log(`Shop preview: http://127.0.0.1:${port}`));
 
 

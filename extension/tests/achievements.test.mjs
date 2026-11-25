@@ -106,6 +106,6 @@ test('achievement page merges milestones and equipment into 63 entries with shar
   assert.ok(containsText(get('achievementWall').children[0], '可前往增长商店选购'));
   const html = await readFile(new URL('../achievements/index.html', import.meta.url), 'utf8');
   assert.equal((html.match(/class="growth-section"/g) || []).length, 1);
-  assert.ok(html.includes('探索越多，选择越多'));
+  assert.ok(html.includes('成就进度'));
   assert.equal(html.includes('id="roadmap"'), false);
 });

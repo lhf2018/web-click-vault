@@ -111,7 +111,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       if (message?.type === 'BUY_ESTATE' || message?.type === 'UPGRADE_ESTATE') {
         const state = await updateState(current => message.type === 'BUY_ESTATE'
-          ? purchaseEstate(current, message.host) : upgradeEstate(current, message.host));
+          ? purchaseEstate(current, message.host, message.price) : upgradeEstate(current, message.host));
         sendResponse({ ok: true, state, week: buildWeekSeries(state, 7) });
         return;
       }
@@ -129,7 +129,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const state = await updateState(current => {
           if (message.type === 'MARKET_SELL') return sellAtMarket(current, message.id, message.mode, message.week, message.price);
           if (message.type === 'SELL_ASSET') return sellAsset(current, message.kind, message.id, message.price);
-          if (message.type === 'TRADE_ASSET') return tradeAsset(current, message.kind, message.id, message.target, message.price);
+          if (message.type === 'TRADE_ASSET') return tradeAsset(current, message.kind, message.id, message.target, message.price, message.targetPrice);
           if (message.type === 'INVEST_PROJECT') return investProject(current, message.projectId, message.units ?? NaN);
           return exitProject(current, message.id, message.units ?? null);
         });
@@ -160,7 +160,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const state = await loadState();
         const week = buildWeekSeries(state, 7);
         const activeSession = await getActiveSessionSnapshot();
-        sendResponse({ ok: true, state, week, activeSession, features: { companies: true, companyManagement: true } });
+        sendResponse({ ok: true, state, week, activeSession, features: { companies: true, companyManagement: true, companyExpansion: true, companyTeams: true } });
         return;
       }
       if (message?.type === "DISMISS_ACHIEVEMENT") {

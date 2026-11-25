@@ -44,15 +44,17 @@ test('prototype keys and non-finite numbers are rejected', async () => {
 test('populated backup preserves companies, property and formula scores', async () => {
   setup();
   const { createCompany } = await import('../core/company.js');
-  const { purchaseEstate } = await import('../core/estate.js');
-  let state = { ...defaultState(), totalAsset: 100000, totalVisits: 200, estateDiscoveries: [{ host: 'example.com', url: 'https://example.com/' }] };
+  const { ESTATE_LEVELS, purchaseEstate, upgradeEstate } = await import('../core/estate.js');
+  let state = { ...defaultState(), totalAsset: 250000, totalVisits: 200, estateDiscoveries: [{ host: 'example.com', url: 'https://example.com/' }] };
   state = createCompany(state, '测试公司', 'publisher');
   state = purchaseEstate(state, 'example.com');
+  Object.assign(state.estates[0], { visits: 195, days: 65 });
+  for (const level of ESTATE_LEVELS.slice(1)) state = upgradeEstate(state, 'example.com');
   state.lastFormula = { scores: { type: 0.8, dwell: 0.5 }, weights: { type: 0.15 }, reason: '浏览', extras: [] };
   stored.assetMeterState = state;
   const backup = JSON.parse(JSON.stringify(await exportBackup()));
   const restored = await importBackup(backup);
   assert.equal(restored.companies[0].name, '测试公司');
-  assert.equal(restored.estates[0].host, 'example.com');
+  assert.deepEqual(restored.estates, state.estates);
   assert.equal(restored.lastFormula.scores.type, 0.8);
 });

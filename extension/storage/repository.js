@@ -2,7 +2,8 @@ import { syncAchievements } from '../core/achievements.js';
 import { ensureWeek } from "../core/weekly.js";
 import { defaultState, ensureDayRollover } from "../core/ledger.js";
 import { DEFAULT_SETTINGS, SCHEMA_VERSION } from "../core/constants.js";
-import { estateHost } from '../core/estate.js';
+import { estateHost, ESTATE_LEVELS, ESTATE_PRICE } from '../core/estate.js';
+import { COMPANY_STAFF, companyTeamCapacity } from '../core/company.js';
 
 const STORAGE_KEY = "assetMeterState";
 const SESSIONS_KEY = "assetMeterSessions";
@@ -167,10 +168,36 @@ export function validateBackup(backup) {
   };
   records('companies', { id: 'string', name: 'string', type: 'string', completed: 'number', income: 'number' });
   for (const company of state.companies || []) {
+    if (company.team !== undefined && (!Array.isArray(company.team) || company.team.length > companyTeamCapacity(company) ||
+      new Set(company.team).size !== company.team.length ||
+      company.team.some(role => typeof role !== 'string' || !Object.hasOwn(COMPANY_STAFF, role)))) throw new Error('公司团队记录无效');
+    if (company.operatingDays !== undefined && (!Number.isSafeInteger(company.operatingDays) || company.operatingDays < 0)) throw new Error('公司经营天数无效');
+    if (company.lastOperatingDay !== undefined && (typeof company.lastOperatingDay !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(company.lastOperatingDay))) throw new Error('公司经营日期无效');
+    if (company.valuationHistory !== undefined && (!Array.isArray(company.valuationHistory) ||
+      company.valuationHistory.length > 16 || company.valuationHistory.some(value => !Number.isFinite(value) || value < 0))) throw new Error('公司市值记录无效');
     if (!['publisher', 'explorer'].includes(company.type) || !Array.isArray(company.history) || (company.order && !Array.isArray(company.order.seen)) || (company.facilities && !Array.isArray(company.facilities))) throw new Error('公司记录无效');
+    if (company.retained !== undefined && (!Number.isFinite(company.retained) || company.retained < 0)) throw new Error('公司留存利润无效');
+    if (company.reinvest !== undefined && typeof company.reinvest !== 'boolean') throw new Error('公司利润分配无效');
+    if (company.order?.retainRate !== undefined && company.order.retainRate !== 0.5) throw new Error('公司订单分配无效');
+    if (company.expansion !== undefined) {
+      const branch = company.expansion;
+      const order = branch?.order;
+      if (!branch || !Number.isInteger(branch.level) || branch.level < 1 || branch.level > 3 ||
+        !Number.isInteger(branch.completed) || branch.completed < 0 || !Array.isArray(order?.seen) ||
+        !Number.isInteger(order.target) || order.target < 2 || !Number.isFinite(order.reward) || order.reward <= 0 ||
+        typeof order.title !== 'string' || order.seen.some(key => typeof key !== 'string') ||
+        (branch.reinvested !== undefined && (!Number.isFinite(branch.reinvested) || branch.reinvested < 0))) throw new Error('公司第二业务记录无效');
+    }
   }
   records('estates', { host: 'string', level: 'number', visits: 'number', income: 'number' });
-  for (const estate of state.estates || []) if (!Number.isInteger(estate.level) || estate.level < 1 || estate.level > 5) throw new Error('地产等级无效');
+  for (const estate of state.estates || []) {
+    if (!Number.isInteger(estate.level) || estate.level < 1 || estate.level > ESTATE_LEVELS.length) throw new Error('地产等级无效');
+    if (estate.purchasePrice !== undefined &&
+      (typeof estate.purchasePrice !== 'number' || !Number.isSafeInteger(estate.purchasePrice * 100) || estate.purchasePrice < ESTATE_PRICE)) {
+      throw new Error('地契购入价格无效');
+    }
+  }
   records('collectibles', { id: 'string', host: 'string', type: 'string', value: 'number' });
   records('investments', { id: 'string', projectId: 'string', principal: 'number', status: 'string' });
   for (const [record, keys] of [[state.weekly, ['hosts', 'days', 'claimed']], [state.achievementStats, ['hosts']]]) {

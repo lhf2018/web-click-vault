@@ -20,7 +20,8 @@ test('landmarks and company briefs derive stable growth from old records without
   assert.equal(landmark.level, 3);
   assert.equal(landmark.milestones.filter(s => s.reached).length, 3);
   assert.deepEqual(landmark.next, { name: '大楼', visits: 14, days: 5, price: 5000 });
-  assert.equal(estateLandmark({ ...state.estates[0], level: 5 }).next, null);
+  assert.equal(estateLandmark({ ...state.estates[0], level: 5 }).next.name, '购物中心');
+  assert.equal(estateLandmark({ ...state.estates[0], level: 8 }).next, null);
   const brief = companyBrief(state.companies[0]);
   assert.deepEqual(brief, companyBrief(state.companies[0]));
   assert.equal(brief.rank, '街区口碑');

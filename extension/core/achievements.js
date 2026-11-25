@@ -40,7 +40,7 @@ export function achievementFacts(state) {
     activeDays: stats.activeDays || 0, sites: (stats.hosts || []).length,
     collectibles: (state.collectibles || []).length,
     estates: (state.estates || []).length,
-    orders: (state.companies || []).reduce((n, c) => n + (c.completed || 0), 0),
+    orders: (state.companies || []).reduce((n, c) => n + (c.completed || 0) + (c.expansion?.completed || 0), 0),
     equipment: Object.values(state.shopLevels || {}).reduce((n, level) => n + (Number(level) || 0), 0),
     trades: (state.investments || []).filter(p => p.status === 'exited').length,
   };
